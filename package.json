@@ -1,0 +1,24 @@
+{
+  "name": "qu3e-typescript",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "module": "lib/index.esm.js",
+  "files": [
+    "lib",
+    "package.json"
+  ],
+  "author": "Joaqim Planstedt",
+  "license": "MIT",
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.23",
+    "@types/typescript": "^2.0.0",
+    "rollup": "^2.70.1",
+    "rollup-plugin-typescript2": "^0.31.2",
+    "tsm": "^2.2.1",
+    "typescript": "^4.6.3"
+  },
+  "dependencies": {}
+}
