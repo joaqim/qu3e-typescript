@@ -1,5 +1,5 @@
-import {mat3} from "tsm"
+import { mat3 } from "gl-matrix";
 
-interface q3MassData {
-    inertia: mat3
+export interface q3MassData {
+  inertia: mat3
 }
