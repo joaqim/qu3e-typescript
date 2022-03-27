@@ -1,7 +1,6 @@
 import { expect } from "chai"
 
-//import * as glm from "gl-matrix"
-import {mat3} from "gl-matrix"
+import { mat3 } from "gl-matrix"
 import "../src/extensions/mat3"
 
 describe('mat3', () => {
@@ -34,13 +33,15 @@ describe('mat3', () => {
 
   it('multiplies', () => {
     var matrix: mat3 = [
-      1, 1, 1,
-      1, 1, 1,
-      1, 1, 1
+      1, 2, 3,
+      1, 2, 3,
+      1, 2, 3
     ]
 
-    mat3.multiply(matrix, matrix, 10);
+    matrix = mat3.multiply(matrix, matrix, 10);
 
-    expect(matrix[0]).to.equal(10)
+    expect(matrix[0]).to.equal(30)
+    expect(matrix[1]).to.equal(60)
+    expect(matrix[2]).to.equal(90)
   })
 })

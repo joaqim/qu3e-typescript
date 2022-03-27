@@ -1,4 +1,5 @@
 import { mat3, vec3 } from "gl-matrix";
+import '@extensions/vec3'
 
 export type Transform = {
     position: vec3

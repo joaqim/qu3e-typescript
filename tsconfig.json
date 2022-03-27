@@ -27,11 +27,11 @@
     "baseUrl": ".",
     "paths": {
       "@*": ["src/*"]
-    }
+    },
   },
   "include": [
     "src/**/*.ts",
-    "src/common.d.ts"
+    "src/**/*.d.ts"
   ],
   "exclude": [
     "lib",

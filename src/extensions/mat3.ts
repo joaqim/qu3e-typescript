@@ -1,22 +1,27 @@
 import { mat3, vec3, ReadonlyMat3, ReadonlyVec3 } from "gl-matrix";
 
-/*
-mat3.transpose = (out: mat3, m: ReadonlyMat3): mat3 =>
-    out = [
-        m[0], m[3], m[6],
-        m[1], m[4], m[7],
-        m[2], m[5], m[8]
-    ] && out;
-*/
-/*
-(mat3 as any).transpose = (out: mat3, m: ReadonlyMat3): mat3 =>
-    out = [
-        m[0], m[3], m[6],
-        m[1], m[4], m[7],
-        m[2], m[5], m[8]
-    ] && out;
-
-*/
+declare module "gl-matrix" {
+    export module mat3 {
+        /**
+        * Multiplies mat3 with a vec3 or number
+        *
+        * @param {mat3} out the receiving matrix
+        * @param {ReadonlyMat3} m the matrix to multiply
+        * @param {ReadonlyVec3 | number} v the vector or number to multiply
+        * @returns {mat3} out
+        */
+        export function multiply(out: mat3, m: ReadonlyMat3, v: ReadonlyVec3): mat3
+        /**
+        * Multiplies mat3 with a vec3 or number
+        *
+        * @param {mat3} out the receiving matrix
+        * @param {ReadonlyMat3} m the matrix to multiply
+        * @param {number} v the vector or number to multiply
+        * @returns {mat3} out
+        */
+        export function multiply(out: mat3, m: ReadonlyMat3, v: number): mat3
+    }
+}
 
 (mat3 as any).multiply = (out: vec3, m: ReadonlyMat3, v: ReadonlyVec3 | number): vec3 => {
     if (Array.isArray(v)) {
