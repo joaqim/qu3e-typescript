@@ -1,53 +1,84 @@
 import { FixedArray } from "@containers"
-/*
-export class Vec3 {
-    x: number
-    y: number
-    z: number
 
-    constructor(x: number, y: number, z: number) {
-        this.x = x
-        this.y = y
-        this.z = z
-    }
-
-    Set(x: number, y: number, z: number) {
-        this.x = x
-        this.y = y
-        this.z = z
-    }
-}
-*/
-
-
-/*
-interface Matrix3 {
-[key in mat3keys]: Vec3[]
-}
-*/
-
-const possibleTypes = (<T extends number[]>(...o: T) => o)(0, 1, 2);
-
-type Types = Record<typeof possibleTypes[number], boolean>
-
-type Vector3 = [x: number, y: number, z: number]
 
 type Vec3Keys = 'x' | 'y' | 'z'
 type Vec3Values = {
     [key in Vec3Keys]: number
 }
+
 export class Vec3 {
-    v: Vec3Values
+    v!: { x: number, y: number, z: number }
 
-
-    constructor(values: Vec3Values) {
-        this.v = values
+    constructor(values: Vec3Values | [x: number, y: number, z: number]) {
+        if (Array.isArray(values)) {
+            this.SetFromArray(values)
+        } else {
+            this.v = <Vec3Values>values
+        }
     }
 
     Set(x: number, y: number, z: number): Vec3 {
         this.v = { x, y, z }
         return this
     }
+
+    SetAll(v: number) {
+        return this.Set(v, v, v)
+    }
+
+    SetFromArray(array: [x: number, y: number, z: number]) {
+        return this.Set(...array)
+    }
+
+    AddVec3(lhs: Vec3): Vec3 {
+        return new Vec3([
+            this.v.x + lhs.v.x,
+            this.v.y + lhs.v.y,
+            this.v.z + lhs.v.z
+        ])
+    }
+
+    SubVec3(lhs: Vec3): Vec3 {
+        return new Vec3([
+            this.v.x - lhs.v.x,
+            this.v.y - lhs.v.y,
+            this.v.z - lhs.v.z
+        ])
+    }
+
+    MultiplyByVec3(lhs: Vec3): Vec3 {
+        return new Vec3([
+            this.v.x * lhs.v.x,
+            this.v.y * lhs.v.y,
+            this.v.z * lhs.v.z
+        ])
+    }
+
+    MultiplyByNumber(n: number): Vec3 {
+        return new Vec3([
+            this.v.x * n,
+            this.v.y * n,
+            this.v.z * n
+        ])
+    }
+
+    DivideByNumber(n: number): Vec3 {
+        return new Vec3([
+            this.v.x / n,
+            this.v.y / n,
+            this.v.z / n
+        ])
+    }
+
+
+    public static Dot = (a: Vec3, b: Vec3): number => a.v.x * b.v.x + a.v.y * b.v.y + a.v.z * b.v.z
+    public static Cross = (a: Vec3, b: Vec3): Vec3 =>
+        new Vec3([
+            a.v.y * b.v.z - b.v.y * a.v.z,
+            b.v.x * a.v.z - a.v.x * b.v.z,
+            a.v.x * b.v.y - b.v.x * a.v.y,
+        ])
+
 }
 
 type Mat3Keys =
@@ -60,14 +91,18 @@ type Matrix3 = {
 }
 
 export class Mat3 {
-    values: {
+    values!: {
         a: number, b: number, c: number,
         d: number, e: number, f: number,
         g: number, h: number, i: number
     };
 
-    constructor(values: Matrix3) {
-        this.values = values
+    constructor(values: Matrix3 | [a: Vec3, b: Vec3, c: Vec3] | FixedArray<9>) {
+        if (Array.isArray(values)) {
+            this.SetRowsFromArray(values)
+        } else {
+            this.values = <Matrix3>values
+        }
     }
 
     SetCells(a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) {
@@ -76,6 +111,7 @@ export class Mat3 {
             d, e, f,
             g, h, i
         }
+        return this
     }
 
     Set(axis: Vec3, angle: number) {
@@ -94,6 +130,16 @@ export class Mat3 {
             xy * t - z * s, y * y * t + c, yz * t + x * s,
             zx * t + y * s, yz * t - x * s, z * z * t + c
         )
+        return this
+    }
+
+    SetRowsFromArray(array: [a: Vec3, b: Vec3, c: Vec3] | FixedArray<9>) {
+        if (array.length == 3) {
+            this.SetRows(...array)
+        } else {
+            this.SetCells(...array)
+        }
+        return this
     }
 
     SetRows(v1: Vec3, v2: Vec3, v3: Vec3) {
@@ -102,7 +148,142 @@ export class Mat3 {
             v2.v.x, v2.v.y, v2.v.z,
             v3.v.x, v3.v.y, v3.v.z,
         )
+        return this
     }
 
+    Column0 = () => new Vec3({ x: this.values.a, y: this.values.b, z: this.values.c })
+    Column1 = () => new Vec3({ x: this.values.d, y: this.values.e, z: this.values.f })
+    Column2 = () => new Vec3({ x: this.values.g, y: this.values.h, z: this.values.i })
+    GetX = () => this.Column0()
+    GetY = () => this.Column1()
+    GetZ = () => this.Column2()
 
+    MultiplyByVec3(v: Vec3): Vec3 {
+        return new Vec3(
+            {
+                x: this.values.a * v.v.x + this.values.b * v.v.y + this.values.c * v.v.z,
+                y: this.values.d * v.v.x + this.values.e * v.v.y + this.values.f * v.v.z,
+                z: this.values.g * v.v.x + this.values.h * v.v.y + this.values.i * v.v.z,
+            }
+        )
+    }
+
+    MultiplyByMat3(m: Mat3) {
+        return new Mat3([
+            this.MultiplyByVec3(m.Column0()),
+            this.MultiplyByVec3(m.Column1()),
+            this.MultiplyByVec3(m.Column2())
+        ])
+    }
+
+    MultiplyByNumber(n: number) {
+        return new Mat3(
+            [
+                this.Column0().MultiplyByNumber(n),
+                this.Column1().MultiplyByNumber(n),
+                this.Column2().MultiplyByNumber(n)
+            ]
+        )
+    }
+
+    AddMat3(m: Mat3) {
+        return new Mat3(
+            [
+                this.Column0().AddVec3(m.Column0()),
+                this.Column1().AddVec3(m.Column1()),
+                this.Column2().AddVec3(m.Column2())
+            ]
+        )
+    }
+
+    SubMat3(m: Mat3) {
+        return new Mat3(
+            [
+                this.Column0().SubVec3(m.Column0()),
+                this.Column1().SubVec3(m.Column1()),
+                this.Column2().SubVec3(m.Column2())
+            ]
+        )
+    }
+
+    public static Identity = () => new Mat3([1, 0, 0, 0, 1, 0, 0, 0, 1])
+
+    public static Rotate = (x: Vec3, y: Vec3, z: Vec3) => new Mat3([x, y, z])
+    public static Transpose = (m: Mat3) =>
+        new Mat3([
+            m.values.a, m.values.d, m.values.g,
+            m.values.b, m.values.e, m.values.h,
+            m.values.c, m.values.f, m.values.i
+        ]);
+
+    public static Zero = (m: Mat3) =>
+        m.SetCells(0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+    public static Diagonal = (a: number, b: number, c: number) =>
+        new Mat3([
+            a, 0, 0,
+            0, b, 0,
+            0, 0, c
+        ])
+
+    public static OuterProduct(u: Vec3, v: Vec3): Mat3 {
+        return new Mat3([
+            v.MultiplyByNumber(u.v.x),
+            v.MultiplyByNumber(u.v.x),
+            v.MultiplyByNumber(u.v.x)
+        ])
+    }
+
+    public static Covariance(points: Vec3[], numPoints: number): Mat3 {
+        const invNumPoints = 1 / numPoints;
+
+        var c = new Vec3([0, 0, 0])
+
+        for (var i = 0; i < numPoints; ++i) {
+            c.AddVec3(points[i])
+        }
+
+        c.DivideByNumber(numPoints)
+
+        var m00, m11, m22, m01, m02, m12
+        m00 = m11 = m22 = m01 = m02 = m12 = 0
+
+        for (var i = 0; i < numPoints; ++i) {
+            var p = points[i].SubVec3(c)
+
+            m00 += p.v.x * p.v.x
+            m11 += p.v.y * p.v.y
+            m22 += p.v.z * p.v.z
+            m01 += p.v.x * p.v.y
+            m02 += p.v.x * p.v.z
+            m12 += p.v.y * p.v.z
+        }
+
+        var m01inv = m01 * invNumPoints
+        var m02inv = m02 * invNumPoints
+        var m12inv = m12 * invNumPoints
+
+        return new Mat3([
+            m00 * invNumPoints, m01inv, m02inv,
+            m01inv, m11 * invNumPoints, m12inv,
+            m02inv, m12inv, m22 * invNumPoints
+        ])
+    }
+
+    public static Inverse(m: Mat3): Mat3 {
+        var tmp0, tmp1, tmp2
+        var detinv
+
+        tmp0 = Vec3.Cross(m.GetY(), m.GetZ())
+        tmp1 = Vec3.Cross(m.GetZ(), m.GetX())
+        tmp2 = Vec3.Cross(m.GetX(), m.GetY())
+
+        detinv = 1 / Vec3.Dot(m.GetZ(), tmp2)
+
+        return new Mat3([
+            tmp0.v.x * detinv, tmp1.v.x * detinv, tmp2.v.x * detinv,
+            tmp0.v.y * detinv, tmp1.v.y * detinv, tmp2.v.y * detinv,
+            tmp0.v.z * detinv, tmp1.v.z * detinv, tmp2.v.z * detinv
+        ])
+    }
 }
