@@ -1,0 +1,5 @@
+{
+    "licenser.customHeaderFile": "${workspaceFolder}/LICENSE.txt",
+    "licenser.license": "Custom",
+    "licenser.useSingleLineStyle": false
+}
