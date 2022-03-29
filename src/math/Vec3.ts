@@ -21,11 +21,12 @@
 
 
 export type Vec3Axis = 0 | 1 | 2
+export type ReadonlyVec3 = Readonly<Vec3>
 
 export default class Vec3 {
-    x: number
-    y: number
-    z: number
+    public x: number
+    public y: number
+    public z: number
 
     constructor(x: number = 0, y: number = 0, z: number = 0) {
         this.x = x
@@ -74,45 +75,40 @@ export default class Vec3 {
         return this.SetRow(...array);
     }
 
-    Sub(lhs: Vec3): Vec3 {
-        return new Vec3(
-            this.x - lhs.x,
-            this.y - lhs.y,
-            this.z - lhs.z
-        );
+    Sub(rhs: Vec3): Vec3 {
+        this.x -= rhs.x
+        this.y -= rhs.y
+        this.z -= rhs.z
+        return this
     }
 
-    Add(lhs: Vec3): Vec3 {
-        return new Vec3(
-            this.x + lhs.x,
-            this.y + lhs.y,
-            this.z + lhs.z
-        );
+    Add(rhs: Vec3): Vec3 {
+        this.x += rhs.x
+        this.y += rhs.y
+        this.z += rhs.z
+        return this
     }
 
 
-    MultiplyByVec3(lhs: Vec3): Vec3 {
-        return new Vec3(
-            this.x * lhs.x,
-            this.y * lhs.y,
-            this.z * lhs.z
-        );
+    MultiplyByVec3(rhs: Vec3): Vec3 {
+        this.x *= rhs.x
+        this.y *= rhs.y
+        this.z *= rhs.z
+        return this
     }
 
     MultiplyByNumber(n: number): Vec3 {
-        return new Vec3(
-            this.x * n,
-            this.y * n,
-            this.z * n
-        );
+        this.x *= n
+        this.y *= n
+        this.z *= n
+        return this
     }
 
     DivideByNumber(n: number): Vec3 {
-        return new Vec3(
-            this.x / n,
-            this.y / n,
-            this.z / n
-        );
+        this.x /= n
+        this.y /= n
+        this.z /= n
+        return this
     }
     /**
      * Inverse
@@ -135,7 +131,7 @@ export default class Vec3 {
         );
     }
 
-    public static MultiplyByVec3(lhs: Vec3, rhs: Vec3): Vec3 {
+    public static Multiply(lhs: Vec3, rhs: Vec3): Vec3 {
         return new Vec3(
             lhs.x * rhs.x,
             lhs.y * rhs.y,
@@ -159,15 +155,26 @@ export default class Vec3 {
     }
 
     /**
-     * Reset
+     * Zero
      */
-    public static Reset(v: Vec3): Vec3 {
+    public static Zero(v: Vec3): Vec3 {
         return v.SetRow(0, 0, 0)
     }
+
     /**
      * Identity
      */
     public static get Identity(): Vec3 { return new Vec3(0, 0, 0) }
+
+
+    /**
+     * Copy
+     */
+    public static Copy(lhs: Vec3, rhs: ReadonlyVec3) {
+        lhs.x = rhs.x
+        lhs.y = rhs.y
+        lhs.z = rhs.z
+    }
 
     /**
      * Mul

@@ -20,9 +20,11 @@
  */
 
 import { FixedArray } from "@containers"
-import Vec3, { Vec3Axis } from "./Vec3"
+import Vec3, { ReadonlyVec3, Vec3Axis } from "./Vec3"
 
+export type Mat3Index = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 export type Mat3Axis = 0 | 1 | 2
+export type ReadonlyMat3 = Readonly<Mat3>
 
 type Mat3Keys =
     'a' | 'b' | 'c' |
@@ -32,6 +34,7 @@ type Mat3Keys =
 type Matrix3 = {
     [key in Mat3Keys]: number
 }
+
 
 export default class Mat3 {
     values!: {
@@ -116,9 +119,9 @@ export default class Mat3 {
 
     SetRow(axis: Mat3Axis | number, value: Vec3) {
         switch (axis) {
-            case 0: this.ex.Assign(value)
-            case 1: this.ey.Assign(value)
-            case 2: this.ez.Assign(value)
+            case 0: this.ex = value
+            case 1: this.ey = value
+            case 2: this.ez = value
         }
     }
 
@@ -130,50 +133,58 @@ export default class Mat3 {
     public get ey(): Vec3 { return this.Column1() }
     public get ez(): Vec3 { return this.Column2() }
 
-    MultiplyByVec3(v: Vec3): Vec3 {
+    public set ex(v: Vec3) {
+        this.values.a = v.x;
+        this.values.b = v.y;
+        this.values.c = v.z;
+    }
+
+    public set ey(v: Vec3) {
+        this.values.d = v.x;
+        this.values.e = v.y;
+        this.values.f = v.z;
+    }
+
+    public set ez(v: Vec3) {
+        this.values.g = v.x;
+        this.values.h = v.y;
+        this.values.i = v.z;
+    }
+
+    static MultiplyByVec3(m: ReadonlyMat3, v: ReadonlyVec3): Vec3 {
         return new Vec3(
-            this.values.a * v.x + this.values.b * v.y + this.values.c * v.z,
-            this.values.d * v.x + this.values.e * v.y + this.values.f * v.z,
-            this.values.g * v.x + this.values.h * v.y + this.values.i * v.z,
+            m.values.a * v.x + m.values.b * v.y + m.values.c * v.z,
+            m.values.d * v.x + m.values.e * v.y + m.values.f * v.z,
+            m.values.g * v.x + m.values.h * v.y + m.values.i * v.z,
         )
     }
 
-    Multiply(m: Mat3) {
-        return new Mat3([
-            this.MultiplyByVec3(m.ex),
-            this.MultiplyByVec3(m.ey),
-            this.MultiplyByVec3(m.ez)
-        ])
+    Multiply(m: Mat3): Mat3 {
+        this.ex = Mat3.MultiplyByVec3(this, m.ex)
+        this.ey = Mat3.MultiplyByVec3(this, m.ey)
+        this.ez = Mat3.MultiplyByVec3(this, m.ez)
+        return this;
     }
 
-    MultiplyByNumber(n: number) {
-        return new Mat3(
-            [
-                this.ex.MultiplyByNumber(n),
-                this.ey.MultiplyByNumber(n),
-                this.ez.MultiplyByNumber(n)
-            ]
-        )
+    MultiplyByNumber(n: number): Mat3 {
+        this.ex = Vec3.MultiplyByNumber(this.ex, n)
+        this.ey = Vec3.MultiplyByNumber(this.ey, n)
+        this.ez = Vec3.MultiplyByNumber(this.ez, n)
+        return this
     }
 
-    Add(m: Mat3) {
-        return new Mat3(
-            [
-                this.ex.Add(m.ex),
-                this.ey.Add(m.ey),
-                this.ez.Add(m.ez)
-            ]
-        )
+    Add(rhs: Mat3): Mat3 {
+        this.ex = Vec3.Add(this.ex, rhs.ex)
+        this.ey = Vec3.Add(this.ey, rhs.ey)
+        this.ez = Vec3.Add(this.ez, rhs.ez)
+        return this
     }
 
-    Sub(m: Mat3) {
-        return new Mat3(
-            [
-                this.ex.Sub(m.ex),
-                this.ey.Sub(m.ey),
-                this.ez.Sub(m.ez)
-            ]
-        )
+    Sub(rhs: Mat3): Mat3 {
+        this.ex = Vec3.Sub(this.ex, rhs.ex)
+        this.ey = Vec3.Sub(this.ey, rhs.ey)
+        this.ez = Vec3.Sub(this.ez, rhs.ez)
+        return this
     }
 
     GetAxis(axis: Mat3Axis | number): Vec3 {
@@ -184,13 +195,37 @@ export default class Mat3 {
         }
     }
 
-    public Get(axis: Mat3Axis | number, vecAxis: Vec3Axis | number): number {
+    Get(index: Mat3Index): number {
+        switch (index) {
+            case 0: return this.values['a']
+            case 1: return this.values['b']
+            case 2: return this.values['c']
+            case 3: return this.values['d']
+            case 4: return this.values['e']
+            case 5: return this.values['f']
+            case 6: return this.values['g']
+            case 7: return this.values['h']
+            case 8: return this.values['i']
+        }
+    }
+    GetCellByKey(key: Mat3Keys): number {
+        return this.values[key]
+    }
+
+    public GetByAxis(axis: Mat3Axis | number, vecAxis: Vec3Axis | number): number {
         return (this.GetAxis(<Vec3Axis>axis)).Get(<Vec3Axis>vecAxis)
     }
 
     public static get Identity() { return new Mat3([1, 0, 0, 0, 1, 0, 0, 0, 1]) }
 
     public static Rotate = (x: Vec3, y: Vec3, z: Vec3) => new Mat3([x, y, z])
+
+    public static Sub = (lhs: ReadonlyMat3, rhs: ReadonlyMat3) => new Mat3([
+        Vec3.Sub(lhs.ex, rhs.ex),
+        Vec3.Sub(lhs.ey, rhs.ey),
+        Vec3.Sub(lhs.ez, rhs.ez),
+    ]);
+
     public static Transpose = (m: Mat3) =>
         new Mat3([
             m.values.a, m.values.d, m.values.g,

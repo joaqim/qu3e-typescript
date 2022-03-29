@@ -493,7 +493,7 @@ export abstract class Collide {
     for (var i = 0; i < 3; ++i) {
       for (var j = 0; j < 3; ++j) {
 
-        var val = Math.abs(C.Get(i, j))
+        var val = Math.abs(C.GetByAxis(i, j))
 
         var o = absC.GetAxis(i)
 
@@ -565,75 +565,75 @@ export abstract class Collide {
       // Edge axis checks
 
       // Cross( a.x, b.x )
-      var rA = eA.y * absC.Get(0, 2) + eA.z * absC.Get(0, 1);
-      var rB = eB.y * absC.Get(2, 0) + eB.z * absC.Get(1, 0);
+      var rA = eA.y * absC.GetByAxis(0, 2) + eA.z * absC.GetByAxis(0, 1);
+      var rB = eB.y * absC.GetByAxis(2, 0) + eB.z * absC.GetByAxis(1, 0);
 
-      s = Math.abs(t.z * C.Get(0, 1) - t.y * C.Get(0, 2)) - (rA + rB);
-      trackFaceResult = this.TrackEdgeAxis(eAxis, 6, s, eMax, new Vec3(0, -C.Get(0, 2), C.Get(0, 1)), nE)
+      s = Math.abs(t.z * C.GetByAxis(0, 1) - t.y * C.GetByAxis(0, 2)) - (rA + rB);
+      trackFaceResult = this.TrackEdgeAxis(eAxis, 6, s, eMax, new Vec3(0, -C.GetByAxis(0, 2), C.GetByAxis(0, 1)), nE)
       if (trackFaceResult.success) return
       var { axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult
 
       // Cross( a.x, b.y )
-      rA = eA.y * absC.Get(1, 2) + eA.z * absC.Get(1, 1);
-      rB = eB.x * absC.Get(2, 0) + eB.z * absC.Get(0, 0);
-      s = Math.abs(t.z * C.Get(1, 1) - t.y * C.Get(1, 2)) - (rA + rB);
-      trackFaceResult = this.TrackEdgeAxis(eAxis, 7, s, eMax, new Vec3(0, -C.Get(1, 2), C.Get(1, 1)), nE)
+      rA = eA.y * absC.GetByAxis(1, 2) + eA.z * absC.GetByAxis(1, 1);
+      rB = eB.x * absC.GetByAxis(2, 0) + eB.z * absC.GetByAxis(0, 0);
+      s = Math.abs(t.z * C.GetByAxis(1, 1) - t.y * C.GetByAxis(1, 2)) - (rA + rB);
+      trackFaceResult = this.TrackEdgeAxis(eAxis, 7, s, eMax, new Vec3(0, -C.GetByAxis(1, 2), C.GetByAxis(1, 1)), nE)
       if (trackFaceResult.success) return
       var { axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult
 
       // Cross( a.x, b.z )
-      rA = eA.y * absC.Get(2, 2) + eA.z * absC.Get(2, 1);
-      rB = eB.x * absC.Get(1, 0) + eB.y * absC.Get(0, 0);
-      s = Math.abs(t.z * C.Get(2, 1) - t.y * C.Get(2, 2)) - (rA + rB);
-      trackFaceResult = this.TrackEdgeAxis(eAxis, 8, s, eMax, new Vec3(0, -C.Get(2, 2), C.Get(2, 1)), nE)
+      rA = eA.y * absC.GetByAxis(2, 2) + eA.z * absC.GetByAxis(2, 1);
+      rB = eB.x * absC.GetByAxis(1, 0) + eB.y * absC.GetByAxis(0, 0);
+      s = Math.abs(t.z * C.GetByAxis(2, 1) - t.y * C.GetByAxis(2, 2)) - (rA + rB);
+      trackFaceResult = this.TrackEdgeAxis(eAxis, 8, s, eMax, new Vec3(0, -C.GetByAxis(2, 2), C.GetByAxis(2, 1)), nE)
       if (trackFaceResult.success) return
       var { axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult
 
       // Cross( a.y, b.x )
-      rA = eA.x * absC.Get(0, 2) + eA.z * absC.Get(0, 0);
-      rB = eB.y * absC.Get(2, 1) + eB.z * absC.Get(1, 1);
-      s = Math.abs(t.x * C.Get(0, 2) - t.z * C.Get(0, 0)) - (rA + rB);
-      trackFaceResult = this.TrackEdgeAxis(eAxis, 9, s, eMax, new Vec3(C.Get(0, 2), 0, -C.Get(0, 0)), nE)
+      rA = eA.x * absC.GetByAxis(0, 2) + eA.z * absC.GetByAxis(0, 0);
+      rB = eB.y * absC.GetByAxis(2, 1) + eB.z * absC.GetByAxis(1, 1);
+      s = Math.abs(t.x * C.GetByAxis(0, 2) - t.z * C.GetByAxis(0, 0)) - (rA + rB);
+      trackFaceResult = this.TrackEdgeAxis(eAxis, 9, s, eMax, new Vec3(C.GetByAxis(0, 2), 0, -C.GetByAxis(0, 0)), nE)
       if (trackFaceResult.success) return
       var { axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult
 
       // Cross( a.y, b.y )
-      rA = eA.x * absC.Get(1, 2) + eA.z * absC.Get(1, 0);
-      rB = eB.x * absC.Get(2, 1) + eB.z * absC.Get(0, 1);
-      s = Math.abs(t.x * C.Get(1, 2) - t.z * C.Get(1, 0)) - (rA + rB);
-      trackFaceResult = this.TrackEdgeAxis(eAxis, 10, s, eMax, new Vec3(C.Get(1, 2), 0, -C.Get(1, 0)), nE)
+      rA = eA.x * absC.GetByAxis(1, 2) + eA.z * absC.GetByAxis(1, 0);
+      rB = eB.x * absC.GetByAxis(2, 1) + eB.z * absC.GetByAxis(0, 1);
+      s = Math.abs(t.x * C.GetByAxis(1, 2) - t.z * C.GetByAxis(1, 0)) - (rA + rB);
+      trackFaceResult = this.TrackEdgeAxis(eAxis, 10, s, eMax, new Vec3(C.GetByAxis(1, 2), 0, -C.GetByAxis(1, 0)), nE)
       if (trackFaceResult.success) return
       var { axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult
 
       // Cross( a.y, b.z )
-      rA = eA.x * absC.Get(2, 2) + eA.z * absC.Get(2, 0);
-      rB = eB.x * absC.Get(1, 1) + eB.y * absC.Get(0, 1);
-      s = Math.abs(t.x * C.Get(2, 2) - t.z * C.Get(2, 0)) - (rA + rB);
-      trackFaceResult = this.TrackEdgeAxis(eAxis, 11, s, eMax, new Vec3(C.Get(2, 2), 0, -C.Get(2, 0)), nE)
+      rA = eA.x * absC.GetByAxis(2, 2) + eA.z * absC.GetByAxis(2, 0);
+      rB = eB.x * absC.GetByAxis(1, 1) + eB.y * absC.GetByAxis(0, 1);
+      s = Math.abs(t.x * C.GetByAxis(2, 2) - t.z * C.GetByAxis(2, 0)) - (rA + rB);
+      trackFaceResult = this.TrackEdgeAxis(eAxis, 11, s, eMax, new Vec3(C.GetByAxis(2, 2), 0, -C.GetByAxis(2, 0)), nE)
       if (trackFaceResult.success) return
       var { axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult
 
       // Cross( a.z, b.x )
-      rA = eA.x * absC.Get(0, 1) + eA.y * absC.Get(0, 0);
-      rB = eB.y * absC.Get(2, 2) + eB.z * absC.Get(1, 2);
-      s = Math.abs(t.y * C.Get(0, 0) - t.x * C.Get(0, 1)) - (rA + rB);
-      trackFaceResult = this.TrackEdgeAxis(eAxis, 12, s, eMax, new Vec3(-C.Get(0, 1), C.Get(0, 0), 0), nE)
+      rA = eA.x * absC.GetByAxis(0, 1) + eA.y * absC.GetByAxis(0, 0);
+      rB = eB.y * absC.GetByAxis(2, 2) + eB.z * absC.GetByAxis(1, 2);
+      s = Math.abs(t.y * C.GetByAxis(0, 0) - t.x * C.GetByAxis(0, 1)) - (rA + rB);
+      trackFaceResult = this.TrackEdgeAxis(eAxis, 12, s, eMax, new Vec3(-C.GetByAxis(0, 1), C.GetByAxis(0, 0), 0), nE)
       if (trackFaceResult.success) return
       var { axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult
 
       // Cross( a.z, b.y )
-      rA = eA.x * absC.Get(1, 1) + eA.y * absC.Get(1, 0);
-      rB = eB.x * absC.Get(2, 2) + eB.z * absC.Get(0, 2);
-      s = Math.abs(t.y * C.Get(1, 0) - t.x * C.Get(1, 1)) - (rA + rB);
-      trackFaceResult = this.TrackEdgeAxis(eAxis, 13, s, eMax, new Vec3(-C.Get(1, 1), C.Get(1, 0), 0), nE)
+      rA = eA.x * absC.GetByAxis(1, 1) + eA.y * absC.GetByAxis(1, 0);
+      rB = eB.x * absC.GetByAxis(2, 2) + eB.z * absC.GetByAxis(0, 2);
+      s = Math.abs(t.y * C.GetByAxis(1, 0) - t.x * C.GetByAxis(1, 1)) - (rA + rB);
+      trackFaceResult = this.TrackEdgeAxis(eAxis, 13, s, eMax, new Vec3(-C.GetByAxis(1, 1), C.GetByAxis(1, 0), 0), nE)
       if (trackFaceResult.success) return
       var { axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult
 
       // Cross( a.z, b.z )
-      rA = eA.x * absC.Get(2, 1) + eA.y * absC.Get(2, 0);
-      rB = eB.x * absC.Get(1, 2) + eB.y * absC.Get(0, 2);
-      s = Math.abs(t.y * C.Get(2, 0) - t.x * C.Get(2, 1)) - (rA + rB);
-      trackFaceResult = this.TrackEdgeAxis(eAxis, 14, s, eMax, new Vec3(-C.Get(2, 1), C.Get(2, 0), 0), nE)
+      rA = eA.x * absC.GetByAxis(2, 1) + eA.y * absC.GetByAxis(2, 0);
+      rB = eB.x * absC.GetByAxis(1, 2) + eB.y * absC.GetByAxis(0, 2);
+      s = Math.abs(t.y * C.GetByAxis(2, 0) - t.x * C.GetByAxis(2, 1)) - (rA + rB);
+      trackFaceResult = this.TrackEdgeAxis(eAxis, 14, s, eMax, new Vec3(-C.GetByAxis(2, 1), C.GetByAxis(2, 0), 0), nE)
       if (trackFaceResult.success) return
       var { axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult
     }

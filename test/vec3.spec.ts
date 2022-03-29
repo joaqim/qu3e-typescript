@@ -1,31 +1,28 @@
 import { expect } from 'chai'
-import { ReadonlyVec3, vec3 } from 'gl-matrix'
-import '../src/extensions/vec3'
-
-
 import { epsilon } from '../src/constants'
+import Vec3, { ReadonlyVec3 } from '../src/math/Vec3'
 
-describe('vec3', () => {
+describe('Vec3', () => {
 
   it('resets', () => {
-    var vector: vec3 = [1.0, 2.0, 3.0]
+    var vector = new Vec3(1.0, 2.0, 3.0)
 
-    vec3.zero(vector)
+    Vec3.Zero(vector)
 
-    expect(vector[0]).to.equal(0)
-    expect(vector[1]).to.equal(0)
-    expect(vector[2]).to.equal(0)
+    expect(vector.x).to.equal(0)
+    expect(vector.y).to.equal(0)
+    expect(vector.z).to.equal(0)
   })
 
   it('copies', () => {
-    const vector1: ReadonlyVec3 = [1.0, 2.0, 3.0]
-    var vector2: vec3 = [0, 0, 0];
+    const vector1: ReadonlyVec3 = new Vec3(1.0, 2.0, 3.0)
+    var vector2 = new Vec3(0, 0, 0)
 
-    vec3.copy(vector2, vector1)
+    Vec3.Copy(vector2, vector1)
 
-    expect(vector2[0]).to.equal(vector1[0])
-    expect(vector2[1]).to.equal(vector1[1])
-    expect(vector2[2]).to.equal(vector1[2])
+    expect(vector2.x).to.equal(vector1.x)
+    expect(vector2.y).to.equal(vector1.y)
+    expect(vector2.z).to.equal(vector1.z)
   })
 
   /*
@@ -72,21 +69,28 @@ describe('vec3', () => {
 
   */
   it('multiplies', () => {
-    const vector1: vec3 = [2.0, 3.0, 4.0]
-    const vector2: vec3 = [5.0, 6.0, 7.0]
+    const vector1: ReadonlyVec3 = new Vec3(2.0, 3.0, 4.0)
+    const vector2: ReadonlyVec3 = new Vec3(5.0, 6.0, 7.0)
 
-    var result = vec3.multiply(vector1, vector1, vector2)
+    var result = Vec3.Multiply(vector1, vector2)
 
-    expect(result[0]).to.be.approximately(10.0, epsilon)
-    expect(result[1]).to.be.approximately(18.0, epsilon)
-    expect(result[2]).to.be.approximately(28.0, epsilon)
+    expect(result.x).to.equal(10.0)
+    expect(result.y).to.equal(18.0)
+    expect(result.z).to.equal(28.0)
 
-    result = vec3.multiply(result, vector2, 10)
+    var vector3 = new Vec3(2, 4, 8)
 
-    expect(result[0]).to.equal(50.0)
-    expect(result[1]).to.equal(60.0)
-    expect(result[2]).to.equal(70.0)
+    vector3.MultiplyByNumber(2)
 
+    expect(vector3.x).to.equal(4)
+    expect(vector3.y).to.equal(8)
+    expect(vector3.z).to.equal(16)
+
+    result.MultiplyByNumber(10)
+
+    expect(result.x).to.equal(100.0)
+    expect(result.y).to.equal(180.0)
+    expect(result.z).to.equal(280.0)
   })
   /*
 
