@@ -8,7 +8,7 @@
     "package.json"
   ],
   "author": "Joaqim Planstedt",
-  "license": "MIT",
+  "license": "zlib",
   "scripts": {
     "test": "ts-mocha -p tsconfig.test.json test/**/*.spec.ts",
     "lint": "tslint src/**/*.ts -t verbose",
