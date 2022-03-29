@@ -1,5 +1,28 @@
+/**
+ *     Qu3e Physics Engine - Typescript Version 1.0
+ *     
+ *     Copyright (c) 2014 Randy Gaul http://www.randygaul.net
+ * 
+ * 	This software is provided 'as-is', without any express or implied
+ * 	warranty. In no event will the authors be held liable for any damages
+ * 	arising from the use of this software.
+ * 
+ * 	Permission is granted to anyone to use this software for any purpose,
+ * 	including commercial applications, and to alter it and redistribute it
+ * 	freely, subject to the following restrictions:
+ * 	  1. The origin of this software must not be misrepresented; you must not
+ * 	     claim that you wrote the original software. If you use this software
+ * 	     in a product, an acknowledgment in the product documentation would be
+ * 	     appreciated but is not required.
+ * 	  2. Altered source versions must be plainly marked as such, and must not
+ * 	     be misrepresented as being the original software.
+ * 	  3. This notice may not be removed or altered from any source distribution.
+ */
+
 import { FixedArray } from "@containers"
-import Vec3 from "./Vec3"
+import Vec3, { Vec3Axis } from "./Vec3"
+
+export type Mat3Axis = 0 | 1 | 2
 
 type Mat3Keys =
     'a' | 'b' | 'c' |
@@ -17,15 +40,35 @@ export default class Mat3 {
         g: number, h: number, i: number
     };
 
-    constructor(values: Matrix3 | [a: Vec3, b: Vec3, c: Vec3] | FixedArray<9>) {
-        if (Array.isArray(values)) {
-            this.SetRowsFromArray(values)
+    constructor(payload?: Matrix3 | [a: Vec3, b: Vec3, c: Vec3] | FixedArray<9>) {
+        if (Array.isArray(payload)) {
+            this.SetRowsFromArray(payload)
         } else {
-            this.values = <Matrix3>values
+            this.values = <Matrix3>payload
         }
     }
 
-    SetCells(a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) {
+
+    SetCell(key: Mat3Keys | number, value: number): Mat3 {
+        if (Number.isInteger(key)) {
+            switch (key) {
+                case 0: this.values["a"] = value
+                case 1: this.values["b"] = value
+                case 2: this.values["c"] = value
+                case 3: this.values["d"] = value
+                case 4: this.values["e"] = value
+                case 5: this.values["f"] = value
+                case 6: this.values["g"] = value
+                case 7: this.values["h"] = value
+                case 8: this.values["i"] = value
+            }
+        } else {
+            this.values[<Mat3Keys>key] = value
+        }
+        return this;
+    }
+
+    SetCells(a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number): Mat3 {
         this.values = {
             a, b, c,
             d, e, f,
@@ -34,12 +77,12 @@ export default class Mat3 {
         return this
     }
 
-    Set(axis: Vec3, angle: number) {
+    Set(axis: Vec3, angle: number): Mat3 {
         const s = Math.sin(angle)
         const c = Math.cos(angle)
-        const x = axis.v.x
-        const y = axis.v.y
-        const z = axis.v.z
+        const x = axis.x
+        const y = axis.y
+        const z = axis.z
         const xy = x * y
         const yz = y * z
         const zx = z * x
@@ -53,7 +96,7 @@ export default class Mat3 {
         return this
     }
 
-    SetRowsFromArray(array: [a: Vec3, b: Vec3, c: Vec3] | FixedArray<9>) {
+    SetRowsFromArray(array: [a: Vec3, b: Vec3, c: Vec3] | FixedArray<9>): Mat3 {
         if (array.length == 3) {
             this.SetRows(...array)
         } else {
@@ -62,71 +105,90 @@ export default class Mat3 {
         return this
     }
 
-    SetRows(v1: Vec3, v2: Vec3, v3: Vec3) {
+    SetRows(v1: Vec3, v2: Vec3, v3: Vec3): Mat3 {
         this.SetCells(
-            v1.v.x, v1.v.y, v1.v.z,
-            v2.v.x, v2.v.y, v2.v.z,
-            v3.v.x, v3.v.y, v3.v.z,
+            v1.x, v1.y, v1.z,
+            v2.x, v2.y, v2.z,
+            v3.x, v3.y, v3.z,
         )
         return this
     }
 
-    Column0 = () => new Vec3({ x: this.values.a, y: this.values.b, z: this.values.c })
-    Column1 = () => new Vec3({ x: this.values.d, y: this.values.e, z: this.values.f })
-    Column2 = () => new Vec3({ x: this.values.g, y: this.values.h, z: this.values.i })
-    GetX = () => this.Column0()
-    GetY = () => this.Column1()
-    GetZ = () => this.Column2()
+    SetRow(axis: Mat3Axis | number, value: Vec3) {
+        switch (axis) {
+            case 0: this.ex.Assign(value)
+            case 1: this.ey.Assign(value)
+            case 2: this.ez.Assign(value)
+        }
+    }
+
+    Column0 = () => new Vec3(this.values.a, this.values.b, this.values.c)
+    Column1 = () => new Vec3(this.values.d, this.values.e, this.values.f)
+    Column2 = () => new Vec3(this.values.g, this.values.h, this.values.i)
+
+    public get ex(): Vec3 { return this.Column0() }
+    public get ey(): Vec3 { return this.Column1() }
+    public get ez(): Vec3 { return this.Column2() }
 
     MultiplyByVec3(v: Vec3): Vec3 {
         return new Vec3(
-            {
-                x: this.values.a * v.v.x + this.values.b * v.v.y + this.values.c * v.v.z,
-                y: this.values.d * v.v.x + this.values.e * v.v.y + this.values.f * v.v.z,
-                z: this.values.g * v.v.x + this.values.h * v.v.y + this.values.i * v.v.z,
-            }
+            this.values.a * v.x + this.values.b * v.y + this.values.c * v.z,
+            this.values.d * v.x + this.values.e * v.y + this.values.f * v.z,
+            this.values.g * v.x + this.values.h * v.y + this.values.i * v.z,
         )
     }
 
-    MultiplyByMat3(m: Mat3) {
+    Multiply(m: Mat3) {
         return new Mat3([
-            this.MultiplyByVec3(m.Column0()),
-            this.MultiplyByVec3(m.Column1()),
-            this.MultiplyByVec3(m.Column2())
+            this.MultiplyByVec3(m.ex),
+            this.MultiplyByVec3(m.ey),
+            this.MultiplyByVec3(m.ez)
         ])
     }
 
     MultiplyByNumber(n: number) {
         return new Mat3(
             [
-                this.Column0().MultiplyByNumber(n),
-                this.Column1().MultiplyByNumber(n),
-                this.Column2().MultiplyByNumber(n)
+                this.ex.MultiplyByNumber(n),
+                this.ey.MultiplyByNumber(n),
+                this.ez.MultiplyByNumber(n)
             ]
         )
     }
 
-    AddMat3(m: Mat3) {
+    Add(m: Mat3) {
         return new Mat3(
             [
-                this.Column0().AddVec3(m.Column0()),
-                this.Column1().AddVec3(m.Column1()),
-                this.Column2().AddVec3(m.Column2())
+                this.ex.Add(m.ex),
+                this.ey.Add(m.ey),
+                this.ez.Add(m.ez)
             ]
         )
     }
 
-    SubMat3(m: Mat3) {
+    Sub(m: Mat3) {
         return new Mat3(
             [
-                this.Column0().SubVec3(m.Column0()),
-                this.Column1().SubVec3(m.Column1()),
-                this.Column2().SubVec3(m.Column2())
+                this.ex.Sub(m.ex),
+                this.ey.Sub(m.ey),
+                this.ez.Sub(m.ez)
             ]
         )
     }
 
-    public static Identity = () => new Mat3([1, 0, 0, 0, 1, 0, 0, 0, 1])
+    GetAxis(axis: Mat3Axis | number): Vec3 {
+        switch (<Mat3Axis>axis) {
+            case 0: return this.ex
+            case 1: return this.ey
+            case 2: return this.ez
+        }
+    }
+
+    public Get(axis: Mat3Axis | number, vecAxis: Vec3Axis | number): number {
+        return (this.GetAxis(<Vec3Axis>axis)).Get(<Vec3Axis>vecAxis)
+    }
+
+    public static get Identity() { return new Mat3([1, 0, 0, 0, 1, 0, 0, 0, 1]) }
 
     public static Rotate = (x: Vec3, y: Vec3, z: Vec3) => new Mat3([x, y, z])
     public static Transpose = (m: Mat3) =>
@@ -148,19 +210,19 @@ export default class Mat3 {
 
     public static OuterProduct(u: Vec3, v: Vec3): Mat3 {
         return new Mat3([
-            v.MultiplyByNumber(u.v.x),
-            v.MultiplyByNumber(u.v.x),
-            v.MultiplyByNumber(u.v.x)
+            v.MultiplyByNumber(u.x),
+            v.MultiplyByNumber(u.x),
+            v.MultiplyByNumber(u.x)
         ])
     }
 
     public static Covariance(points: Vec3[], numPoints: number): Mat3 {
         const invNumPoints = 1 / numPoints;
 
-        var c = new Vec3([0, 0, 0])
+        var c = new Vec3(0, 0, 0)
 
         for (var i = 0; i < numPoints; ++i) {
-            c.AddVec3(points[i])
+            c.Add(points[i])
         }
 
         c.DivideByNumber(numPoints)
@@ -169,14 +231,14 @@ export default class Mat3 {
         m00 = m11 = m22 = m01 = m02 = m12 = 0
 
         for (var i = 0; i < numPoints; ++i) {
-            var p = points[i].SubVec3(c)
+            var p = points[i].Sub(c)
 
-            m00 += p.v.x * p.v.x
-            m11 += p.v.y * p.v.y
-            m22 += p.v.z * p.v.z
-            m01 += p.v.x * p.v.y
-            m02 += p.v.x * p.v.z
-            m12 += p.v.y * p.v.z
+            m00 += p.x * p.x
+            m11 += p.y * p.y
+            m22 += p.z * p.z
+            m01 += p.x * p.y
+            m02 += p.x * p.z
+            m12 += p.y * p.z
         }
 
         var m01inv = m01 * invNumPoints
@@ -194,16 +256,16 @@ export default class Mat3 {
         var tmp0, tmp1, tmp2
         var detinv
 
-        tmp0 = Vec3.Cross(m.GetY(), m.GetZ())
-        tmp1 = Vec3.Cross(m.GetZ(), m.GetX())
-        tmp2 = Vec3.Cross(m.GetX(), m.GetY())
+        tmp0 = Vec3.Cross(m.ey, m.ez)
+        tmp1 = Vec3.Cross(m.ez, m.ex)
+        tmp2 = Vec3.Cross(m.ex, m.ey)
 
-        detinv = 1 / Vec3.Dot(m.GetZ(), tmp2)
+        detinv = 1 / Vec3.Dot(m.ez, tmp2)
 
         return new Mat3([
-            tmp0.v.x * detinv, tmp1.v.x * detinv, tmp2.v.x * detinv,
-            tmp0.v.y * detinv, tmp1.v.y * detinv, tmp2.v.y * detinv,
-            tmp0.v.z * detinv, tmp1.v.z * detinv, tmp2.v.z * detinv
+            tmp0.x * detinv, tmp1.x * detinv, tmp2.x * detinv,
+            tmp0.y * detinv, tmp1.y * detinv, tmp2.y * detinv,
+            tmp0.z * detinv, tmp1.z * detinv, tmp2.z * detinv
         ])
     }
 }
