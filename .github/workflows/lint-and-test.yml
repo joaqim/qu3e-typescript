@@ -6,9 +6,9 @@ jobs:
   lint_and_test:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      #fail-fast: false
       matrix:
-        nodejs: ['12', '14', '16']
+        nodejs: ['14']
 
     steps:
     - uses: actions/checkout@v2
