@@ -1,3 +1,3 @@
-export * from "./AABB"
-export * from "./HalfSpace"
-export * from "./RaycastData"
+export * from "./AABB";
+export * from "./HalfSpace";
+export * from "./RaycastData";

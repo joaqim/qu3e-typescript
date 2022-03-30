@@ -1,3 +1,3 @@
 export function nada(): string {
-  return "nada"
+  return "nada";
 }

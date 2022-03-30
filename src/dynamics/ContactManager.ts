@@ -1,68 +1,69 @@
 import BroadPhase from "@broadphase/BroadPhase";
 import List from "@collections/List";
-import Box from "@collision/Box";
+import type Box from "@collision/Box";
 import { ContactConstraint } from "@dynamics";
-import { ContactListener } from "@scene/Scene";
-import { ContactEdge } from "./Contact";
+import type { ContactListener } from "@scene/Scene";
+import type { ContactEdge } from "./Contact";
 
 export default class ContactManager {
-    BroadPhase: BroadPhase
-    ContactList: List<ContactConstraint>
-    ContactListener: ContactListener | null = null
+  BroadPhase: BroadPhase;
+  ContactList: List<ContactConstraint>;
+  ContactListener: ContactListener | null = null;
 
-    constructor() {
-        this.BroadPhase = new BroadPhase(this)
-        this.ContactList = new List<ContactConstraint>()
-    }
-    // Add a new contact constraint for a pair of objects
-    // unless the contact constraint already exists
-    AddContact(a: Box, b: Box): void {
-        const bodyA = a.body
-        const bodyB = b.body
+  constructor() {
+    this.BroadPhase = new BroadPhase(this);
+    this.ContactList = new List<ContactConstraint>();
+  }
 
-        if (!bodyA.CanCollide(bodyB)) return
-        // Search for existing matching contact
-        // Return if found duplicate to avoid duplicate constraints
-        // Mark pre-existing duplicates as active
-        //foreach(var edge in A.body.ContactList)
-        a.body.ContactList.ForEach((edge: ContactEdge) => {
-            if (edge.other == bodyB) {
-                // TODO: check if edge.constraint can be undefined
-                Assert(edge.constraint! !== undefined)
-                const shapeA = edge.constraint!.A;
-                const shapeB = edge.constraint!.B;
+  // Add a new contact constraint for a pair of objects
+  // unless the contact constraint already exists
+  AddContact(a: Box, b: Box): void {
+    const bodyA = a.body;
+    const bodyB = b.body;
 
-                // @TODO: Verify this against Box2D; not sure if this is all we need here
-                if ((a == shapeA) && (b == shapeB))
-                    return;
-            }
-        })
+    if (!bodyA.CanCollide(bodyB)) return;
+    // Search for existing matching contact
+    // Return if found duplicate to avoid duplicate constraints
+    // Mark pre-existing duplicates as active
+    // foreach(var edge in A.body.ContactList)
+    a.body.ContactList.ForEach((edge: ContactEdge) => {
+      if (edge.other == bodyB) {
+        // TODO: check if edge.constraint can be undefined
+        Assert(edge.constraint! !== undefined);
+        const shapeA = edge.constraint!.A;
+        const shapeB = edge.constraint!.B;
 
-        // Create new contact
-        var contact = new ContactConstraint(
-            a,
-            b,
-            a.body,
-            b.body,
-            0,
-            this.MixFriction(a, b),
-            this.MixRestitution(a, b))
+        // @TODO: Verify this against Box2D; not sure if this is all we need here
+        if (a == shapeA && b == shapeB) return;
+      }
+    });
 
-        contact.manifold.SetPair(a, b);
+    // Create new contact
+    const contact = new ContactConstraint(
+      a,
+      b,
+      a.body,
+      b.body,
+      0,
+      this.MixFriction(a, b),
+      this.MixRestitution(a, b)
+    );
 
-        this.ContactList.Add(contact);
+    contact.manifold.SetPair(a, b);
 
-        // Connect A
-        contact.edgeA.constraint = contact;
-        contact.edgeA.other = bodyB;
-        bodyA.ContactList.Add(contact.edgeA);
+    this.ContactList.Add(contact);
 
-        // Connect B
-        contact.edgeB.constraint = contact;
-        contact.edgeB.other = bodyA;
-        bodyB.ContactList.Add(contact.edgeB);
+    // Connect A
+    contact.edgeA.constraint = contact;
+    contact.edgeA.other = bodyB;
+    bodyA.ContactList.Add(contact.edgeA);
 
-        bodyA.SetToAwake();
-        bodyB.SetToAwake();
-    }
+    // Connect B
+    contact.edgeB.constraint = contact;
+    contact.edgeB.other = bodyA;
+    bodyB.ContactList.Add(contact.edgeB);
+
+    bodyA.SetToAwake();
+    bodyB.SetToAwake();
+  }
 }

@@ -1,4 +1,3 @@
-
 export interface TreeCallback {
-    Callback: (id: number) => boolean;
+  Callback: (id: number) => boolean;
 }

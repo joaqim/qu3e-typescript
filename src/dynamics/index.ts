@@ -1,2 +1,2 @@
-export * from "./Body"
-export * from "./Contact"
+export * from "./Body";
+export * from "./Contact";

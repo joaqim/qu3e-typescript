@@ -19,18 +19,18 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import Box from "@collision/Box";
-import AABB from "@common/geometry/AABB";
+import type Box from "@collision/Box";
+import type AABB from "@common/geometry/AABB";
 import ContactPair from "./ContactPair";
 import DynamicAABBTree from "./DynamicAABBTree/DynamicAABBTree";
-import { TreeCallback } from "./TreeCallback";
+import type { TreeCallback } from "./TreeCallback";
 
 export default class BroadPhase implements TreeCallback {
-  private manager: ContactManager;
+  private readonly manager: ContactManager;
   private pairBuffer: ContactPair[];
   private moveBuffer: number[];
 
-  private tree: DynamicAABBTree = new DynamicAABBTree();
+  private readonly tree: DynamicAABBTree = new DynamicAABBTree();
 
   // TODO: Better defaults
   private currentIndex!: number;
@@ -61,45 +61,46 @@ export default class BroadPhase implements TreeCallback {
     this.pairBuffer = [];
 
     // Query the tree with all moving boxs
-    for (var i = 0; i < this.moveBuffer.length; ++i) {
-      this.currentIndex = this.moveBuffer[i];
+    for (var index = 0; index < this.moveBuffer.length; ++index) {
+      this.currentIndex = this.moveBuffer[index];
       const aabb = this.tree.GetFatAABB(this.currentIndex);
 
       // @TODO: Use a static and non-static tree and query one against the other.
       //        This will potentially prevent (gotta think about this more) time
       //        wasted with queries of static bodies against static bodies, and
       //        kinematic to kinematic.
-      //this.tree.Query(this, aabb);
+      // this.tree.Query(this, aabb);
     }
 
     // Reset the move buffer
-    //MoveBuffer.Clear();
+    // MoveBuffer.Clear();
     this.moveBuffer = [];
 
     // Sort pairs to expose duplicates
-    //PairBuffer.Sort(ContactPairSorter.Default);
-    //this.pairBuffer.sort(ContactPairSorter.Default)
+    // PairBuffer.Sort(ContactPairSorter.Default);
+    // this.pairBuffer.sort(ContactPairSorter.Default)
 
     // Queue manifolds for solving
     {
-      var i = 0;
-      while (i < this.pairBuffer.length) {
+      var index = 0;
+
+      while (index < this.pairBuffer.length) {
         // Add contact to manager
-        var pair = this.pairBuffer[i];
+        const pair = this.pairBuffer[index];
         // TODO: Can pair.A/B ever be undefined here?
         Assert(pair.A != undefined && pair.B != undefined);
-        var A = <Box>this.tree.GetUserData(pair.A!);
-        var B = <Box>this.tree.GetUserData(pair.B!);
-        //this.manager.AddContact(A, B);
+        const A = <Box>this.tree.GetUserData(pair.A!);
+        const B = <Box>this.tree.GetUserData(pair.B!);
+        // this.manager.AddContact(A, B);
 
-        ++i;
+        ++index;
 
         // Skip duplicate pairs by iterating i until we find a unique pair
-        while (i < this.pairBuffer.length) {
-          const potentialDup = this.pairBuffer[i];
+        while (index < this.pairBuffer.length) {
+          const potentialDup = this.pairBuffer[index];
 
           if (pair.A != potentialDup.A || pair.B != potentialDup.B) break;
-          ++i;
+          ++index;
         }
       }
     }
@@ -109,10 +110,10 @@ export default class BroadPhase implements TreeCallback {
 
   Callback(index: number): boolean {
     if (index == this.currentIndex) return true;
-    const iA = Math.min(index, this.currentIndex);
-    const iB = Math.max(index, this.currentIndex);
+    const indexA = Math.min(index, this.currentIndex);
+    const indexB = Math.max(index, this.currentIndex);
 
-    this.pairBuffer.push(new ContactPair(iA, iB));
+    this.pairBuffer.push(new ContactPair(indexA, indexB));
 
     return true;
   }

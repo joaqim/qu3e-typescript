@@ -22,7 +22,6 @@
 import AABB from "@common/geometry/AABB";
 import type RaycastData from "@common/geometry/RaycastData";
 import type Render from "@common/Render";
-import { FixedArray } from "@containers";
 import Vec3 from "@math/Vec3";
 import type { TreeCallback } from "../TreeCallback";
 import { Node } from "./Node";
@@ -197,8 +196,8 @@ export default class DynamicAABBTree {
   // For testing
   public Validate() {
     // Verify free list
-    var freeNodes = 0;
-    var index = this.freeList;
+    let freeNodes = 0;
+    let index = this.freeList;
 
     while (index != Node.Null) {
       Assert(index >= 0 && index < this.capacity);
@@ -228,8 +227,8 @@ export default class DynamicAABBTree {
     if (this.freeList == Node.Null) {
       this.capacity *= 2;
       this.ResizeNodes(this.nodes, this.capacity);
-      //var newNodes = new Array<Node>(this.capacity)
-      //copyWithin(this.nodes, newNodes, this.Count)
+      // var newNodes = new Array<Node>(this.capacity)
+      // copyWithin(this.nodes, newNodes, this.Count)
       this.AddToFreeList(this.count);
     }
 
@@ -254,10 +253,10 @@ export default class DynamicAABBTree {
     this.count -= 1;
   }
 
-  Balance(iA: number): number {
-    var A = this.nodes[iA];
+  Balance(indexA: number): number {
+    const A = this.nodes[indexA];
 
-    if (A.IsLeaf() || A.height == 1) return iA;
+    if (A.IsLeaf() || A.height == 1) return indexA;
 
     /*      A
               /   \
@@ -266,45 +265,46 @@ export default class DynamicAABBTree {
            D   E F   G
         */
 
-    var iB = A.left;
-    var iC = A.right;
-    var B = this.nodes[iB];
-    var C = this.nodes[iC];
+    const indexB = A.left;
+    const indexC = A.right;
+    const B = this.nodes[indexB];
+    const C = this.nodes[indexC];
 
-    var balance = C.height - B.height;
+    const balance = C.height - B.height;
 
     // C is higher, promote C
     if (balance > 1) {
-      var iF = C.left;
-      var iG = C.right;
-      var F = this.nodes[iF];
-      var G = this.nodes[iG];
+      const indexF = C.left;
+      const indexG = C.right;
+      const F = this.nodes[indexF];
+      const G = this.nodes[indexG];
 
       // grandParent point to C
       if (A.parent != Node.Null) {
-        if (this.nodes[A.parent].left == iA) this.nodes[A.parent].left = iC;
-        else this.nodes[A.parent].right = iC;
-      } else this.root = iC;
+        if (this.nodes[A.parent].left == indexA)
+          this.nodes[A.parent].left = indexC;
+        else this.nodes[A.parent].right = indexC;
+      } else this.root = indexC;
 
       // Swap A and C
-      C.left = iA;
+      C.left = indexA;
       C.parent = A.parent;
-      A.parent = iC;
+      A.parent = indexC;
 
       // Finish rotation
       if (F.height > G.height) {
-        C.right = iF;
-        A.right = iG;
-        G.parent = iA;
+        C.right = indexF;
+        A.right = indexG;
+        G.parent = indexA;
         A.aabb = AABB.Combine(B.aabb, G.aabb);
         C.aabb = AABB.Combine(A.aabb, F.aabb);
 
         A.height = 1 + Math.max(B.height, G.height);
         C.height = 1 + Math.max(A.height, F.height);
       } else {
-        C.right = iG;
-        A.right = iF;
-        F.parent = iA;
+        C.right = indexG;
+        A.right = indexF;
+        F.parent = indexA;
         A.aabb = AABB.Combine(B.aabb, F.aabb);
         C.aabb = AABB.Combine(A.aabb, G.aabb);
 
@@ -312,41 +312,42 @@ export default class DynamicAABBTree {
         C.height = 1 + Math.max(A.height, G.height);
       }
 
-      return iC;
+      return indexC;
     }
 
     // B is higher, promote B
-    else if (balance < -1) {
-      var iD = B.left;
-      var iE = B.right;
-      var D = this.nodes[iD];
-      var E = this.nodes[iE];
+    if (balance < -1) {
+      const indexD = B.left;
+      const indexE = B.right;
+      const D = this.nodes[indexD];
+      const E = this.nodes[indexE];
 
       // grandParent point to B
       if (A.parent != Node.Null) {
-        if (this.nodes[A.parent].left == iA) this.nodes[A.parent].left = iB;
-        else this.nodes[A.parent].right = iB;
-      } else this.root = iB;
+        if (this.nodes[A.parent].left == indexA)
+          this.nodes[A.parent].left = indexB;
+        else this.nodes[A.parent].right = indexB;
+      } else this.root = indexB;
 
       // Swap A and B
-      B.right = iA;
+      B.right = indexA;
       B.parent = A.parent;
-      A.parent = iB;
+      A.parent = indexB;
 
       // Finish rotation
       if (D.height > E.height) {
-        B.left = iD;
-        A.left = iE;
-        E.parent = iA;
+        B.left = indexD;
+        A.left = indexE;
+        E.parent = indexA;
         A.aabb = AABB.Combine(C.aabb, E.aabb);
         B.aabb = AABB.Combine(A.aabb, D.aabb);
 
         A.height = 1 + Math.max(C.height, E.height);
         B.height = 1 + Math.max(A.height, D.height);
       } else {
-        B.left = iE;
-        A.left = iD;
-        D.parent = iA;
+        B.left = indexE;
+        A.left = indexD;
+        D.parent = indexA;
         A.aabb = AABB.Combine(C.aabb, D.aabb);
         B.aabb = AABB.Combine(A.aabb, E.aabb);
 
@@ -354,10 +355,10 @@ export default class DynamicAABBTree {
         B.height = 1 + Math.max(A.height, E.height);
       }
 
-      return iB;
+      return indexB;
     }
 
-    return iA;
+    return indexA;
   }
 
   InsertLeaf(id: number) {
@@ -368,26 +369,28 @@ export default class DynamicAABBTree {
     }
 
     // Search for sibling
-    var searchIndex = this.root;
-    var leafAABB = this.nodes[id].aabb;
+    let searchIndex = this.root;
+    const leafAABB = this.nodes[id].aabb;
+
     while (!this.nodes[searchIndex].IsLeaf()) {
       // Cost for insertion at index (branch node), involves creation
       // of new branch to contain this index and the new leaf
-      var combined = AABB.Combine(leafAABB, this.nodes[searchIndex].aabb);
-      var combinedArea = combined.SurfaceArea();
-      var branchCost = 2 * combinedArea;
+      const combined = AABB.Combine(leafAABB, this.nodes[searchIndex].aabb);
+      const combinedArea = combined.SurfaceArea();
+      const branchCost = 2 * combinedArea;
 
       // Inherited cost (surface area growth from heirarchy update after descent)
-      var inheritedCost =
+      const inheritedCost =
         2 * (combinedArea - this.nodes[searchIndex].aabb.SurfaceArea());
 
-      var left = this.nodes[searchIndex].left;
-      var right = this.nodes[searchIndex].right;
+      const left = this.nodes[searchIndex].left;
+      const right = this.nodes[searchIndex].right;
 
       // Calculate costs for left/right descents. If traversal is to a leaf,
       // then the cost of the combind AABB represents a new branch node. Otherwise
       // the cost is only the inflation of the pre-existing branch.
       var leftDescentCost;
+
       if (this.nodes[left].IsLeaf())
         leftDescentCost =
           AABB.Combine(leafAABB, this.nodes[left].aabb).SurfaceArea() +
@@ -403,6 +406,7 @@ export default class DynamicAABBTree {
 
       // Cost for right descent
       var rightDescentCost;
+
       if (this.nodes[right].IsLeaf())
         rightDescentCost =
           AABB.Combine(leafAABB, this.nodes[right].aabb).SurfaceArea() +
@@ -423,11 +427,11 @@ export default class DynamicAABBTree {
       else searchIndex = right;
     }
 
-    var sibling = searchIndex;
+    const sibling = searchIndex;
 
     // Create new parent
-    var oldParent = this.nodes[sibling].parent;
-    var newParent = this.AllocateNode();
+    const oldParent = this.nodes[sibling].parent;
+    const newParent = this.AllocateNode();
     this.nodes[newParent].parent = oldParent;
     this.nodes[newParent].userData = null;
     this.nodes[newParent].aabb = AABB.Combine(
@@ -464,9 +468,9 @@ export default class DynamicAABBTree {
     }
 
     // Setup parent, grandParent and sibling
-    var parent = this.nodes[id].parent;
-    var grandParent = this.nodes[parent].parent;
-    var sibling;
+    const parent = this.nodes[id].parent;
+    const grandParent = this.nodes[parent].parent;
+    let sibling;
 
     if (this.nodes[parent].left == id) sibling = this.nodes[parent].right;
     else sibling = this.nodes[parent].left;
@@ -493,10 +497,10 @@ export default class DynamicAABBTree {
   }
 
   ValidateStructure(index: number) {
-    var n = this.nodes[index];
+    const n = this.nodes[index];
 
-    var il = n.left;
-    var ir = n.right;
+    const il = n.left;
+    const ir = n.right;
 
     if (n.IsLeaf()) {
       Assert(ir == Node.Null);
@@ -506,8 +510,8 @@ export default class DynamicAABBTree {
 
     Assert(il >= 0 && il < this.capacity);
     Assert(ir >= 0 && ir < this.capacity);
-    var l = this.nodes[il];
-    var r = this.nodes[ir];
+    const l = this.nodes[il];
+    const r = this.nodes[ir];
 
     Assert(l.parent == index);
     Assert(r.parent == index);
@@ -515,10 +519,11 @@ export default class DynamicAABBTree {
     this.ValidateStructure(il);
     this.ValidateStructure(ir);
   }
+
   RenderNode(render: Render, index: number) {
     Assert(index >= 0 && index < this.capacity);
 
-    var n = this.nodes[index];
+    const n = this.nodes[index];
     const b = n.aabb;
 
     render.SetPenPosition(b.min.x, b.max.y, b.min.z);
@@ -556,8 +561,8 @@ export default class DynamicAABBTree {
     while (index != Node.Null) {
       index = this.Balance(index);
 
-      var left = this.nodes[index].left;
-      var right = this.nodes[index].right;
+      const left = this.nodes[index].left;
+      const right = this.nodes[index].right;
 
       this.nodes[index].height =
         1 + Math.max(this.nodes[left].height, this.nodes[right].height);
@@ -572,10 +577,10 @@ export default class DynamicAABBTree {
 
   // Insert nodes at a given index until Capacity into the free list
   AddToFreeList(index: number): void {
-    for (var i = index; i < this.capacity - 1; ++i) {
-      this.nodes[i] = new Node();
-      this.nodes[i].next = i + 1;
-      this.nodes[i].height = Node.Null;
+    for (let index_ = index; index_ < this.capacity - 1; ++index_) {
+      this.nodes[index_] = new Node();
+      this.nodes[index_].next = index_ + 1;
+      this.nodes[index_].height = Node.Null;
     }
 
     this.nodes[this.capacity - 1] = new Node();
@@ -584,7 +589,7 @@ export default class DynamicAABBTree {
     this.freeList = index;
   }
 
-  //TODO Make sure aabb is based by reference
+  // TODO Make sure aabb is based by reference
   public static FattenAABB(aabb: AABB): void {
     const k_fattener = 0.5;
     const v = new Vec3(k_fattener, k_fattener, k_fattener);

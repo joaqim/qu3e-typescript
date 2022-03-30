@@ -1,21 +1,21 @@
-import AABB from "@common/geometry/AABB";
+import type AABB from "@common/geometry/AABB";
 
 export class Node {
-    // Fat AABB for leafs, bounding AABB for branches
-    aabb!: AABB;
-    parent!: number;
-    next!: number;
+  // Fat AABB for leafs, bounding AABB for branches
+  public aabb!: AABB;
+  public parent!: number;
+  public next!: number;
 
-    // Child indices
-    left!: number;
-    right!: number;
+  // Child indices
+  public left!: number;
+  public right!: number;
 
-    userData: any;
+  public userData: unknown;
 
-    // leaf = 0, free nodes = -1
-    height!: number;
+  // leaf = 0, free nodes = -1
+  public height!: number;
 
-    static readonly Null = -1;
+  public static readonly Null = -1;
 
-    IsLeaf = (): boolean => this.right == Node.Null;
+  public IsLeaf = (): boolean => this.right === Node.Null;
 }
