@@ -22,7 +22,7 @@
 import Vec3 from "@math/Vec3";
 
 export default class RaycastData {
-
+    //TODO: Better defaults
     start!: Vec3;   // Beginning point of the ray
     dir!: Vec3;     // Direction of the ray (normalized)
     t!: number;     // Time specifying ray endpoint
@@ -40,6 +40,6 @@ export default class RaycastData {
     // only be called after a raycast has been conducted with a
     // return value of true.
     GetImpactPoint(): Vec3 {
-        return this.start.Add(this.dir.MultiplyByNumber(this.toi));
+        return this.start.Add(this.dir.Scale(this.toi));
     }
 }

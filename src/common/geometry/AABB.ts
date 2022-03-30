@@ -19,19 +19,21 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import Vec3 from "@math/Vec3";
+import Vec3, { ReadonlyVec3 } from "@math/Vec3";
+
+export type ReadonlyAABB = Readonly<AABB>
 
 export default class AABB {
     min: Vec3;
     max: Vec3;
 
-    constructor(min: Vec3, max: Vec3) {
-        this.min = min
-        this.max = max
+    constructor(min?: ReadonlyVec3, max?: ReadonlyVec3) {
+        this.max = max ? max : new Vec3(Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER);
+        this.min = min ? min : new Vec3(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
     }
 
     // http://box2d.org/2014/02/computing-a-basis/
-    static ComputeBasis(a: Vec3, b: Vec3, c: Vec3): { b: Vec3, c: Vec3 } {
+    static ComputeBasis(a: ReadonlyVec3, b: Vec3, c: Vec3): { b: Vec3, c: Vec3 } {
         // Suppose vector a has all equal components and is a unit vector: a = (s, s, s)
         // Then 3*s*s = 1, s = sqrt(1/3) = 0.57735027. This means that at least one component of a
         // unit vector must be greater or equal to 0.57735027. Can use SIMD select operation.
@@ -41,13 +43,13 @@ export default class AABB {
         else
             b.SetRow(0, a.z, -a.y);
 
-        b = Vec3.Normalize(b);
+        b.Normalize()
         c = Vec3.Cross(a, b);
 
         return { b, c }
     }
 
-    static AABBtoAABB(a: AABB, b: AABB): boolean {
+    static AABBtoAABB(a: ReadonlyAABB, b: ReadonlyAABB): boolean {
         if (a.max.x < b.min.x || a.min.x > b.max.x)
             return false;
 
@@ -60,7 +62,7 @@ export default class AABB {
         return true;
     }
 
-    Contains(other: AABB): boolean {
+    Contains(other: ReadonlyAABB): boolean {
         return (
             this.min.x <= other.min.x &&
             this.min.y <= other.min.y &&
@@ -71,7 +73,7 @@ export default class AABB {
         )
     }
 
-    ContainsPoint(point: Vec3): boolean {
+    ContainsPoint(point: ReadonlyVec3): boolean {
         return (
             this.min.x <= point.x &&
             this.min.y <= point.y &&
@@ -90,7 +92,7 @@ export default class AABB {
         return 2 * (x * y + x * z + y * z);
     }
 
-    static Combine = (a: AABB, b: AABB): AABB =>
+    static Combine = (a: ReadonlyAABB, b: ReadonlyAABB): AABB =>
     ({
         min: Vec3.Min(a.min, b.min),
         max: Vec3.Max(a.max, b.max)

@@ -19,27 +19,23 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import Vec3 from "@math/Vec3";
+import Vec3, { ReadonlyVec3 } from "@math/Vec3";
 
 export default class HalfSpace {
     normal: Vec3;
     distance: number;
 
-    constructor(normal: Vec3, distance: number) {
+    constructor(normal: ReadonlyVec3, distance: number) {
         this.normal = normal;
         this.distance = distance;
     }
 
-    Set(values: [a: Vec3, b: Vec3, c: Vec3] | [normal: Vec3, p: Vec3]): void {
-        const a = values[0];
-        const b = values[1];
-        const c = values[2];
-
-        this.normal = Vec3.Normalize(c ? Vec3.Cross(b.Sub(a), c.Sub(a)) : a);
+    Set(a: ReadonlyVec3, b: ReadonlyVec3, c?: ReadonlyVec3): void {
+        this.normal = Vec3.Normalize(c ? Vec3.Cross(Vec3.Sub(b,a), Vec3.Sub(c,a)) : a);
         this.distance = Vec3.Dot(this.normal, c ? a : b);
     }
 
-    Origin = () => this.normal.MultiplyByNumber(this.distance);
-    Distance = (p: Vec3): number => Vec3.Dot(this.normal, p) - this.Distance(p);
-    Projected = (p: Vec3): Vec3 => p.Sub(this.normal).MultiplyByNumber(this.Distance(p));
+    Origin = () => this.normal.Scale(this.distance);
+    Distance = (p: ReadonlyVec3): number => Vec3.Dot(this.normal, p) - this.Distance(p);
+    Projected = (p: ReadonlyVec3): Vec3 => Vec3.Sub(p,this.normal).Scale(this.Distance(p));
 }
