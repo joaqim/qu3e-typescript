@@ -21,7 +21,7 @@
 
 import HalfSpace from "@common/geometry/HalfSpace"
 import Mat3 from "./Mat3"
-import Vec3 from "./Vec3"
+import Vec3, { ReadonlyVec3 } from "./Vec3"
 
 export default class Transform {
     position!: Vec3
@@ -35,15 +35,15 @@ export default class Transform {
     /**
      * MulWithVec3
      */
-    public static MulWithVec3(tx: Transform, v: Vec3, scale?: Vec3): Vec3 {
-        return tx.rotation.MultiplyByVec3(scale ? v.MultiplyByVec3(scale) : v).Add(tx.position)
+    public static MulWithVec3(tx: Transform, v: ReadonlyVec3, scale?: ReadonlyVec3): Vec3 {
+        return Mat3.MultiplyByVec3(tx.rotation, (scale ? Vec3.Multiply(v,scale) : v))
     }
 
     /**
      * MulMat3WithVec3
      */
     public static MulMat3WithVec3(r: Mat3, v: Vec3): Vec3 {
-        return r.MultiplyByVec3(v)
+        return Mat3.MultiplyByVec3(r,v)
     }
 
     /**
@@ -66,7 +66,7 @@ export default class Transform {
     /**
      * MulWithHalfSpace
      */
-    public static MulWithHalfSpace(tx: Transform, p: HalfSpace, scale?: Vec3): HalfSpace {
+    public static MulWithHalfSpace(tx: Transform, p: HalfSpace, scale?: ReadonlyVec3): HalfSpace {
         var origin = p.Origin()
         origin = scale ? Transform.MulWithVec3(tx, origin, scale) : Transform.MulWithVec3(tx, origin)
         const normal = Transform.MulMat3WithVec3(tx.rotation, p.normal)
@@ -76,15 +76,15 @@ export default class Transform {
     /**
      * MulTWithVec3
      */
-    public static MulTWithVec3(tx: Transform, v: Vec3): Vec3 {
-        return Mat3.Transpose(tx.rotation).MultiplyByVec3(v.Sub(tx.position))
+    public static MulTWithVec3(tx: Transform, v: ReadonlyVec3): Vec3 {
+        return Mat3.MultiplyByVec3(Mat3.Transpose(tx.rotation), Vec3.Sub(v, tx.position))
     }
 
     /**
      * MulTMat3WithVec3
      */
-    public static MulTMat3WithVec3(r: Mat3, v: Vec3): Vec3 {
-        return Mat3.Transpose(r).MultiplyByVec3(v)
+    public static MulTMat3WithVec3(r: Mat3, v: ReadonlyVec3): Vec3 {
+        return Mat3.MultiplyByVec3(Mat3.Transpose(r),v)
     }
 
     /**
@@ -118,7 +118,7 @@ export default class Transform {
      * Identity
      */
     public static get Identity() {
-        return new Transform(Mat3.Identity, Vec3.Identity)
+        return new Transform(Mat3.Identity(), Vec3.Identity())
     }
 
 }
