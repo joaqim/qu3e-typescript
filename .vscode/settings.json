@@ -12,5 +12,6 @@
     }],
     "eslint.validate": ["typescript"],
     "explorer.confirmDragAndDrop": false, 
-    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+    "prettier.eslintIntegration": true,
 }
