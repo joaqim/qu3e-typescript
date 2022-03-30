@@ -80,7 +80,7 @@ export default class Mat3 {
         return this
     }
 
-    Set(axis: Vec3, angle: number): Mat3 {
+    Set(axis: ReadonlyVec3, angle: number): Mat3 {
         const s = Math.sin(angle)
         const c = Math.cos(angle)
         const x = axis.x
@@ -99,7 +99,7 @@ export default class Mat3 {
         return this
     }
 
-    SetRowsFromArray(array: [a: Vec3, b: Vec3, c: Vec3] | FixedArray<9>): Mat3 {
+    SetRowsFromArray(array: [a: ReadonlyVec3, b: ReadonlyVec3, c: ReadonlyVec3] | FixedArray<9>): Mat3 {
         if (array.length == 3) {
             this.SetRows(...array)
         } else {
@@ -108,7 +108,7 @@ export default class Mat3 {
         return this
     }
 
-    SetRows(v1: Vec3, v2: Vec3, v3: Vec3): Mat3 {
+    SetRows(v1: ReadonlyVec3, v2: ReadonlyVec3, v3: ReadonlyVec3): Mat3 {
         this.SetCells(
             v1.x, v1.y, v1.z,
             v2.x, v2.y, v2.z,
@@ -159,7 +159,14 @@ export default class Mat3 {
         )
     }
 
-    Multiply(m: Mat3): Mat3 {
+    static Scale(lhs: Mat3, n: number): Mat3 {
+        lhs.ex = Vec3.MultiplyByNumber(lhs.ex, n)
+        lhs.ey = Vec3.MultiplyByNumber(lhs.ey, n)
+        lhs.ez = Vec3.MultiplyByNumber(lhs.ez, n)
+        return lhs
+    }
+
+    Multiply(m: ReadonlyMat3): Mat3 {
         this.ex = Mat3.MultiplyByVec3(this, m.ex)
         this.ey = Mat3.MultiplyByVec3(this, m.ey)
         this.ez = Mat3.MultiplyByVec3(this, m.ez)
@@ -173,14 +180,29 @@ export default class Mat3 {
         return this
     }
 
-    Add(rhs: Mat3): Mat3 {
+    Scale(n: number): Mat3 {
+        this.ex = Vec3.MultiplyByNumber(this.ex, n)
+        this.ey = Vec3.MultiplyByNumber(this.ey, n)
+        this.ez = Vec3.MultiplyByNumber(this.ez, n)
+        return this
+    }
+    
+    // TODO: Make sure this is correct
+    MultiplyByVec3(v: ReadonlyVec3): Mat3 {
+        this.ex = Vec3.MultiplyByNumber(this.ex, v.x)
+        this.ey = Vec3.MultiplyByNumber(this.ey, v.y)
+        this.ez = Vec3.MultiplyByNumber(this.ez, v.z)
+        return this
+    }
+
+    Add(rhs: ReadonlyMat3): Mat3 {
         this.ex = Vec3.Add(this.ex, rhs.ex)
         this.ey = Vec3.Add(this.ey, rhs.ey)
         this.ez = Vec3.Add(this.ez, rhs.ez)
         return this
     }
 
-    Sub(rhs: Mat3): Mat3 {
+    Sub(rhs: ReadonlyMat3): Mat3 {
         this.ex = Vec3.Sub(this.ex, rhs.ex)
         this.ey = Vec3.Sub(this.ey, rhs.ey)
         this.ez = Vec3.Sub(this.ez, rhs.ez)
@@ -216,9 +238,9 @@ export default class Mat3 {
         return (this.GetAxis(<Vec3Axis>axis)).Get(<Vec3Axis>vecAxis)
     }
 
-    public static get Identity() { return new Mat3([1, 0, 0, 0, 1, 0, 0, 0, 1]) }
+    public static Identity = () => new Mat3([1, 0, 0, 0, 1, 0, 0, 0, 1])
 
-    public static Rotate = (x: Vec3, y: Vec3, z: Vec3) => new Mat3([x, y, z])
+    public static Rotate = (x: ReadonlyVec3, y: ReadonlyVec3, z: ReadonlyVec3) => new Mat3([x, y, z])
 
     public static Sub = (lhs: ReadonlyMat3, rhs: ReadonlyMat3) => new Mat3([
         Vec3.Sub(lhs.ex, rhs.ex),
@@ -226,30 +248,35 @@ export default class Mat3 {
         Vec3.Sub(lhs.ez, rhs.ez),
     ]);
 
-    public static Transpose = (m: Mat3) =>
+    public static Transpose = (m: ReadonlyMat3) =>
         new Mat3([
             m.values.a, m.values.d, m.values.g,
             m.values.b, m.values.e, m.values.h,
             m.values.c, m.values.f, m.values.i
         ]);
 
-    public static Zero = (m: Mat3) =>
-        m.SetCells(0, 0, 0, 0, 0, 0, 0, 0, 0)
+    public static Zero = (m?: Mat3): Mat3 => {
+        if (!m) m = new Mat3()
+        return m.SetCells(0, 0, 0, 0, 0, 0, 0, 0, 0)
+    }
 
-    public static Diagonal = (a: number, b: number, c: number) =>
-        new Mat3([
+    public static Diagonal = (a: number, b?: number, c?: number): Mat3 => {
+        if(!b) b = a
+        if(!c) c = a
+        return new Mat3([
             a, 0, 0,
             0, b, 0,
             0, 0, c
-        ])
-
-    public static OuterProduct(u: Vec3, v: Vec3): Mat3 {
-        return new Mat3([
-            v.MultiplyByNumber(u.x),
-            v.MultiplyByNumber(u.x),
-            v.MultiplyByNumber(u.x)
-        ])
+        ]);
     }
+
+    // TODO: make sure this function works
+    public static OuterProduct = (u: ReadonlyVec3, v: ReadonlyVec3): Mat3 =>
+        new Mat3([
+            Vec3.MultiplyByNumber(v,u.x),
+            Vec3.MultiplyByNumber(v,u.y),
+            Vec3.MultiplyByNumber(v,u.z)
+        ]);
 
     public static Covariance(points: Vec3[], numPoints: number): Mat3 {
         const invNumPoints = 1 / numPoints;
@@ -266,7 +293,7 @@ export default class Mat3 {
         m00 = m11 = m22 = m01 = m02 = m12 = 0
 
         for (var i = 0; i < numPoints; ++i) {
-            var p = points[i].Sub(c)
+            const p = points[i].Sub(c)
 
             m00 += p.x * p.x
             m11 += p.y * p.y
@@ -276,9 +303,9 @@ export default class Mat3 {
             m12 += p.y * p.z
         }
 
-        var m01inv = m01 * invNumPoints
-        var m02inv = m02 * invNumPoints
-        var m12inv = m12 * invNumPoints
+        const m01inv = m01 * invNumPoints
+        const m02inv = m02 * invNumPoints
+        const m12inv = m12 * invNumPoints
 
         return new Mat3([
             m00 * invNumPoints, m01inv, m02inv,
@@ -287,15 +314,12 @@ export default class Mat3 {
         ])
     }
 
-    public static Inverse(m: Mat3): Mat3 {
-        var tmp0, tmp1, tmp2
-        var detinv
+    public static Inverse(m: ReadonlyMat3): Mat3 {
+        const tmp0 = Vec3.Cross(m.ey, m.ez)
+        const tmp1 = Vec3.Cross(m.ez, m.ex)
+        const tmp2 = Vec3.Cross(m.ex, m.ey)
 
-        tmp0 = Vec3.Cross(m.ey, m.ez)
-        tmp1 = Vec3.Cross(m.ez, m.ex)
-        tmp2 = Vec3.Cross(m.ex, m.ey)
-
-        detinv = 1 / Vec3.Dot(m.ez, tmp2)
+        const detinv = 1 / Vec3.Dot(m.ez, tmp2)
 
         return new Mat3([
             tmp0.x * detinv, tmp1.x * detinv, tmp2.x * detinv,
