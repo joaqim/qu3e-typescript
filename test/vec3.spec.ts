@@ -25,11 +25,10 @@ describe('Vec3', () => {
     expect(vector2.z).to.equal(vector1.z)
   })
 
-  /*
   it('negates', () => {
-    const vector = new vec3([1.0, 2.0, 3.0])
+    const vector = new Vec3(1.0, 2.0, 3.0)
 
-    vector.negate()
+    vector.Inverse()
 
     expect(vector.x).to.equal(-1.0)
     expect(vector.y).to.equal(-2.0)
@@ -37,19 +36,23 @@ describe('Vec3', () => {
   })
 
   it('compares', () => {
-    const vector1 = new vec3([1.0, 2.0, 3.0])
-    const vector2 = new vec3([1.0, 2.0, 3.0])
-    const vector3 = new vec3([2.0, 3.0, 4.0])
+    const vector1 = new Vec3(1.0, 2.0, 3.0)
+    const vector2 = new Vec3(1.0, 2.0, 3.0)
+    const vector3 = new Vec3(2.0, 3.0, 4.0)
 
-    expect(vector1.equals(vector2)).to.equal(true)
-    expect(vector1.equals(vector3)).to.equal(false)
+    expect(vector1.Equals(vector2)).to.equal(true)
+    expect(vector1.Equals(vector3)).to.equal(false)
   })
 
   it('adds', () => {
-    const vector1 = new vec3([1.0, 2.0, 3.0])
-    const vector2 = new vec3([2.0, 3.0, 4.0])
+    const vector1 = new Vec3(1.0, 2.0, 3.0)
+    const vector2 = new Vec3(2.0, 3.0, 4.0)
 
-    const result = vector1.add(vector2)
+    const result = Vec3.Add(vector1, vector2)
+
+    expect(vector1.x).to.be.approximately(1.0, epsilon)
+    expect(vector1.y).to.be.approximately(2.0, epsilon)
+    expect(vector1.z).to.be.approximately(3.0, epsilon)
 
     expect(result.x).to.be.approximately(3.0, epsilon)
     expect(result.y).to.be.approximately(5.0, epsilon)
@@ -57,17 +60,16 @@ describe('Vec3', () => {
   })
 
   it('subtracts', () => {
-    const vector1 = new vec3([1.0, 2.0, 3.0])
-    const vector2 = new vec3([2.0, 4.0, 6.0])
+    const vector1 = new Vec3(1.0, 2.0, 3.0)
+    const vector2 = new Vec3(2.0, 4.0, 6.0)
 
-    const result = vector1.subtract(vector2)
+    const result = Vec3.Sub(vector1, vector2)
 
     expect(result.x).to.be.approximately(-1.0, epsilon)
     expect(result.y).to.be.approximately(-2.0, epsilon)
     expect(result.z).to.be.approximately(-3.0, epsilon)
   })
 
-  */
   it('multiplies', () => {
     const vector1: ReadonlyVec3 = new Vec3(2.0, 3.0, 4.0)
     const vector2: ReadonlyVec3 = new Vec3(5.0, 6.0, 7.0)
@@ -92,13 +94,12 @@ describe('Vec3', () => {
     expect(result.y).to.equal(180.0)
     expect(result.z).to.equal(280.0)
   })
-  /*
 
   it('divides', () => {
-    const vector1 = new vec3([2.0, 3.0, 0.8])
-    const vector2 = new vec3([5.0, 6.0, 4.0])
+    const vector1 = new Vec3(2.0, 3.0, 0.8)
+    const vector2 = new Vec3(5.0, 6.0, 4.0)
 
-    const result = vector1.divide(vector2)
+    const result = vector1.Divide(vector2)
 
     expect(result.x).to.be.approximately(0.4, epsilon)
     expect(result.y).to.be.approximately(0.5, epsilon)
@@ -106,9 +107,9 @@ describe('Vec3', () => {
   })
 
   it('scales', () => {
-    const vector = new vec3([1.0, 2.0, 3.0])
+    const vector = new Vec3(1.0, 2.0, 3.0)
 
-    vector.scale(2.0)
+    vector.MultiplyByNumber(2.0)
 
     expect(vector.x).to.be.approximately(2.0, epsilon)
     expect(vector.y).to.be.approximately(4.0, epsilon)
@@ -116,13 +117,23 @@ describe('Vec3', () => {
   })
 
   it('normalizes', () => {
-    const vector = new vec3([1.0, 2.0, 3.0])
+    const vector1 = new Vec3(1.0, 2.0, 3.0)
+    const vector2: ReadonlyVec3 = vector1.Copy()
 
-    vector.normalize()
+    vector1.Normalize()
 
-    expect(vector.x).to.be.approximately(0.26726, epsilon)
-    expect(vector.y).to.be.approximately(0.53452, epsilon)
-    expect(vector.z).to.be.approximately(0.80178, epsilon)
+    expect(vector1.x).to.be.approximately(0.26726, epsilon)
+    expect(vector1.y).to.be.approximately(0.53452, epsilon)
+    expect(vector1.z).to.be.approximately(0.80178, epsilon)
+
+    var result = Vec3.Normalize(vector2)
+
+    expect(result.x).to.be.approximately(0.26726, epsilon)
+    expect(result.y).to.be.approximately(0.53452, epsilon)
+    expect(result.z).to.be.approximately(0.80178, epsilon)
+
+    expect(vector2.x).to.equal(1.0)
+    expect(vector2.y).to.equal(2.0)
+    expect(vector2.z).to.equal(3.0)
   })
-*/
 })

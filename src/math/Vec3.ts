@@ -34,6 +34,15 @@ export default class Vec3 {
         this.z = z
     }
 
+    public set xyz(payload: [x: number, y: number, z: number] | Vec3) {
+        if (Array.isArray(payload)) {
+            this.SetFromArray(payload)
+        } else {
+            this.Assign(payload)
+        }
+
+    }
+
     Get(axis: Vec3Axis): number {
         switch (axis) {
             case (0): return this.x
@@ -42,7 +51,7 @@ export default class Vec3 {
         }
     }
 
-    Assign(v: Vec3): Vec3 {
+    Assign(v: ReadonlyVec3): Vec3 {
         this.x = v.x
         this.y = v.y
         this.z = v.z
@@ -56,6 +65,7 @@ export default class Vec3 {
         return this;
     }
 
+
     Set(axis: Vec3Axis | number, value: number): Vec3 {
         switch (axis) {
             case 0: this.x = value
@@ -65,8 +75,6 @@ export default class Vec3 {
         return this
     }
 
-
-
     SetAll(v: number): Vec3 {
         return this.SetRow(v, v, v);
     }
@@ -75,14 +83,27 @@ export default class Vec3 {
         return this.SetRow(...array);
     }
 
-    Sub(rhs: Vec3): Vec3 {
+    Copy = (dest?: Vec3): Vec3 => {
+        if (!dest) return new Vec3(this.x, this.y, this.z)
+        dest.x = this.x
+        dest.y = this.y
+        dest.z = this.z
+        return dest
+    }
+
+    Equals = (rhs: ReadonlyVec3): boolean =>
+        this.x == rhs.x &&
+        this.y == rhs.y &&
+        this.z == rhs.z
+
+    Sub(rhs: ReadonlyVec3): Vec3 {
         this.x -= rhs.x
         this.y -= rhs.y
         this.z -= rhs.z
         return this
     }
 
-    Add(rhs: Vec3): Vec3 {
+    Add(rhs: ReadonlyVec3): Vec3 {
         this.x += rhs.x
         this.y += rhs.y
         this.z += rhs.z
@@ -90,7 +111,7 @@ export default class Vec3 {
     }
 
 
-    MultiplyByVec3(rhs: Vec3): Vec3 {
+    Multiply(rhs: ReadonlyVec3): Vec3 {
         this.x *= rhs.x
         this.y *= rhs.y
         this.z *= rhs.z
@@ -104,18 +125,35 @@ export default class Vec3 {
         return this
     }
 
+    Scale = (n: number): Vec3 => this.MultiplyByNumber(n)
+
+    Divide(rhs: ReadonlyVec3): Vec3 {
+        this.x /= rhs.x
+        this.y /= rhs.y
+        this.z /= rhs.z
+        return this
+    }
+
     DivideByNumber(n: number): Vec3 {
         this.x /= n
         this.y /= n
         this.z /= n
         return this
     }
-    /**
-     * Inverse
-     */
+
     Inverse = (): Vec3 => this.SetRow(-this.x, -this.y, -this.z)
 
-    public static Sub(lhs: Vec3, rhs: Vec3): Vec3 {
+    Normalize(): Vec3 {
+        const l = Vec3.Length(this)
+        if (l != 0) {
+            const inv = 1 / l
+            return this.MultiplyByNumber(inv)
+        }
+        return this
+    }
+
+        
+    public static Sub(lhs: ReadonlyVec3, rhs: ReadonlyVec3): Vec3 {
         return new Vec3(
             lhs.x - rhs.x,
             lhs.y - rhs.y,
@@ -123,7 +161,7 @@ export default class Vec3 {
         );
     }
 
-    public static Add(lhs: Vec3, rhs: Vec3): Vec3 {
+    public static Add(lhs: ReadonlyVec3, rhs: ReadonlyVec3): Vec3 {
         return new Vec3(
             lhs.x + rhs.x,
             lhs.y + rhs.y,
@@ -131,7 +169,7 @@ export default class Vec3 {
         );
     }
 
-    public static Multiply(lhs: Vec3, rhs: Vec3): Vec3 {
+    public static Multiply(lhs: ReadonlyVec3, rhs: ReadonlyVec3): Vec3 {
         return new Vec3(
             lhs.x * rhs.x,
             lhs.y * rhs.y,
@@ -139,14 +177,24 @@ export default class Vec3 {
         );
     }
 
-    public static MultiplyByNumber(lhs: Vec3, n: number): Vec3 {
+    public static MultiplyByNumber(lhs: ReadonlyVec3, n: number): Vec3 {
         return new Vec3(
             lhs.x * n,
             lhs.y * n,
             lhs.z * n
         );
     }
-    public static DivideByNumber(lhs: Vec3, n: number): Vec3 {
+
+    public static Scale = (lhs: ReadonlyVec3, n: number): Vec3 => Vec3.MultiplyByNumber(lhs, n)
+
+    public static Divide(lhs: ReadonlyVec3, rhs: ReadonlyVec3): Vec3 {
+        return new Vec3(
+            lhs.x / rhs.x,
+            lhs.y / rhs.y,
+            lhs.z / rhs.z
+        );
+    }
+    public static DivideByNumber(lhs: ReadonlyVec3, n: number): Vec3 {
         return new Vec3(
             lhs.x / n,
             lhs.y / n,
@@ -157,33 +205,40 @@ export default class Vec3 {
     /**
      * Zero
      */
-    public static Zero(v: Vec3): Vec3 {
+    public static Zero(v?: Vec3): Vec3 {
+        if (!v) v = new Vec3()
         return v.SetRow(0, 0, 0)
     }
 
     /**
      * Identity
      */
-    public static get Identity(): Vec3 { return new Vec3(0, 0, 0) }
+    public static Identity(dest?: Vec3): Vec3 {
+         if(!dest) return new Vec3(0, 0, 0) 
+         dest.SetAll(0)
+         return dest
+        }
 
 
     /**
      * Copy
      */
-    public static Copy(lhs: Vec3, rhs: ReadonlyVec3) {
-        lhs.x = rhs.x
-        lhs.y = rhs.y
-        lhs.z = rhs.z
+    public static Copy(source: ReadonlyVec3, target?: Vec3) {
+        if (!target) return new Vec3(source.x, source.y, source.z)
+        target.x = source.x
+        target.y = source.y
+        target.z = source.z
+        return target
     }
 
     /**
      * Mul
      */
-    public static Mul = (a: Vec3, b: Vec3): Vec3 =>
+    public static Mul = (a: ReadonlyVec3, b: ReadonlyVec3): Vec3 =>
         new Vec3(a.x * b.x, a.y * b.y, a.z * b.z)
 
-    public static Dot = (a: Vec3, b: Vec3): number => a.x * b.x + a.y * b.y + a.z * b.z;
-    public static Cross = (a: Vec3, b: Vec3): Vec3 => new Vec3(
+    public static Dot = (a: ReadonlyVec3, b: ReadonlyVec3): number => a.x * b.x + a.y * b.y + a.z * b.z;
+    public static Cross = (a: ReadonlyVec3, b: ReadonlyVec3): Vec3 => new Vec3(
         a.y * b.z - b.y * a.z,
         b.x * a.z - a.x * b.z,
         a.x * b.y - b.x * a.y,
@@ -192,25 +247,25 @@ export default class Vec3 {
     /**
      * Length
      */
-    public static Length(v: Vec3): number {
-        return Math.sqrt(v.x * v.x + v.y * v.y + v.z + v.z)
+    public static Length(v: ReadonlyVec3): number {
+        return Math.sqrt(Vec3.LengthSq(v))
     }
 
     /**
      * LengthSq
      */
-    public static LengthSq(v: Vec3): number {
-        return v.x * v.x + v.y * v.y + v.z + v.z
+    public static LengthSq(v: ReadonlyVec3): number {
+        return v.x * v.x + v.y * v.y + v.z * v.z
     }
 
     /**
      * Normalize
      */
-    public static Normalize(v: Vec3): Vec3 {
+    public static Normalize(v: ReadonlyVec3): Vec3 {
         const l = Vec3.Length(v)
         if (l != 0) {
             const inv = 1 / l
-            return v.MultiplyByNumber(inv)
+            return Vec3.MultiplyByNumber(v, inv)
         }
         return v
     }
@@ -218,7 +273,7 @@ export default class Vec3 {
     /**
      * Distance
      */
-    public static Distance(a: Vec3, b: Vec3): number {
+    public static Distance(a: ReadonlyVec3, b: ReadonlyVec3): number {
         const xp = a.x - b.x
         const yp = a.y - b.y
         const zp = a.z - b.z
@@ -229,7 +284,7 @@ export default class Vec3 {
     /**
      * DistanceSq
      */
-    public DistanceSq(a: Vec3, b: Vec3): number {
+    public DistanceSq(a: ReadonlyVec3, b: ReadonlyVec3): number {
         const xp = a.x - b.x
         const yp = a.y - b.y
         const zp = a.z - b.z
@@ -240,29 +295,29 @@ export default class Vec3 {
     /**
      * Abs 
      */
-    public static Abs = (v: Vec3): Vec3 => new Vec3(Math.abs(v.x), Math.abs(v.y), Math.abs(v.z))
+    public static Abs = (v: ReadonlyVec3): Vec3 => new Vec3(Math.abs(v.x), Math.abs(v.y), Math.abs(v.z))
 
     /**
      * Min
      */
-    public static Min = (a: Vec3, b: Vec3): Vec3 => new Vec3(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z))
+    public static Min = (a: ReadonlyVec3, b: ReadonlyVec3): Vec3 => new Vec3(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z))
 
     /**
      * Max
      */
-    public static Max = (a: Vec3, b: Vec3): Vec3 => new Vec3(Math.max(a.x, b.x), Math.max(a.y, b.y), Math.max(a.z, b.z))
+    public static Max = (a: ReadonlyVec3, b: ReadonlyVec3): Vec3 => new Vec3(Math.max(a.x, b.x), Math.max(a.y, b.y), Math.max(a.z, b.z))
 
     /**
      * MinPerElem
      */
-    public static MinPerElem = (v: Vec3): number => Math.min(v.x, Math.min(v.y, v.z))
+    public static MinPerElem = (v: ReadonlyVec3): number => Math.min(v.x, Math.min(v.y, v.z))
 
     /**
      * MaxPerElem
      */
-    public static MaxPerElem = (v: Vec3): number => Math.max(v.x, Math.max(v.y, v.z))
+    public static MaxPerElem = (v: ReadonlyVec3): number => Math.max(v.x, Math.max(v.y, v.z))
     /**
      * Inverse
      */
-    public static Inverse = (v: Vec3): Vec3 => new Vec3(-v.x, -v.y, -v.z)
+    public static Inverse = (v: ReadonlyVec3): Vec3 => new Vec3(-v.x, -v.y, -v.z)
 }
