@@ -34,6 +34,18 @@ export class MassData {
     mass!: number
 }
 
+export function CreateBox(def: BoxDef, body: Body): Box {
+    return new Box(
+        def.Tx,
+        def.E,
+        body,
+        def.Friction,
+        def.Restitution,
+        def.Density,
+        def.Sensor
+    )
+}
+
 export default class Box {
     local!: Transform
     e!: Vec3 // extent, as in the extent of each OBB axis
@@ -45,9 +57,16 @@ export default class Box {
 
     broadPhaseIndex!: number
     userData: any
-    sensors!: boolean
+    sensor!: boolean
 
-    constructor() {
+    constructor(local: Transform, e: Vec3, body: Body, friction: number, restitution: number, density: number, sensor: boolean) {
+        this.local = local
+        this.e = e
+        this.body = body
+        this.friction = friction
+        this.restitution = restitution
+        this.density = density
+        this.sensor = sensor
     }
 
     TestPoint(tx: Transform, p: Vec3): boolean {
@@ -126,7 +145,7 @@ export default class Box {
         new Vec3(1, 1, 1)
     ]
 
-    public ComputeAABB(tx: Transform, aabb: AABB): void {
+    public ComputeAABB(tx: Transform, aabb?: AABB): AABB {
         const world = Transform.Mul(tx, this.local);
         var min = new Vec3(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
         var max = new Vec3(Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER);
@@ -137,11 +156,15 @@ export default class Box {
             max = Vec3.Max(max, v);
         }
 
+        if (!aabb) {
+            return new AABB(min, max)
+        }
         aabb.min = min;
         aabb.max = max;
+        return aabb;
     }
 
-    public ComputeMass(md: MassData): void {
+    public ComputeMass(md?: MassData): MassData {
         // Calculate inertia tensor
         const ex2 = 4 * this.e.x * this.e.x;
         const ey2 = 4 * this.e.y * this.e.y;
@@ -155,7 +178,7 @@ export default class Box {
         // Transform tensor to local space
         I = this.local.rotation.Multiply(I).Multiply(Mat3.Transpose(this.local.rotation));
         I.Add(
-            Mat3.Identity
+            Mat3.Identity()
                 .MultiplyByNumber(
                     Vec3.Dot(this.local.position, this.local.position))
                 .Sub(
@@ -164,9 +187,11 @@ export default class Box {
                         this.local.position)))
             .MultiplyByNumber(mass)
 
+        if(!md) md = new MassData()
         md.center = this.local.position;
         md.inertia = I;
         md.mass = mass;
+        return md
     }
 
 
