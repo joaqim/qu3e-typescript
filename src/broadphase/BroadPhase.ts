@@ -1,12 +1,12 @@
 /**
  *     Qu3e Physics Engine - Typescript Version 1.0
- *     
+ *
  *     Copyright (c) 2014 Randy Gaul http://www.randygaul.net
- * 
+ *
  * 	This software is provided 'as-is', without any express or implied
  * 	warranty. In no event will the authors be held liable for any damages
  * 	arising from the use of this software.
- * 
+ *
  * 	Permission is granted to anyone to use this software for any purpose,
  * 	including commercial applications, and to alter it and redistribute it
  * 	freely, subject to the following restrictions:
@@ -21,104 +21,99 @@
 
 import Box from "@collision/Box";
 import AABB from "@common/geometry/AABB";
-
-export class ContactPair {
-    A?: number
-    B?: number
-}
-
-export interface TreeCallback {
-    Callback: (id: number) => boolean
-}
-
-class ContactManager {
-
-}
-
-// https://ricardoborges.dev/data-structures-in-typescript-binary-search-tree
-
-class TreeNode<T> {
-    data: T
-    leftNode?: TreeNode<T>
-    rightNode?: TreeNode<T>
-
-    constructor(data: T) {
-        this.data = data
-    }
-}
-
-class Tree<T> {
-    root?: TreeNode<T>
-    comparator: (a: T, b: T) => number
-
-    constructor(comparator: (a: T, b: T) => number) {
-        this.comparator = comparator
-    }
-
-    insert(data: T): TreeNode<T> | undefined {
-        if (!this.root) {
-            this.root = new TreeNode(data);
-            return this.root;
-        }
-
-        let current = this.root;
-
-        while (true) {
-            if (this.comparator(data, current.data) === 1) {
-                if (current.rightNode) {
-                    current = current.rightNode;
-                } else {
-                    current.rightNode = new TreeNode(data);
-                    return current.rightNode;
-                }
-            } else {
-                if (current.leftNode) {
-                    current = current.leftNode;
-                } else {
-                    current.leftNode = new TreeNode(data);
-                    return current.leftNode;
-                }
-            }
-        }
-    }
-
-    search(data: T): TreeNode<T> | undefined {
-        if (!this.root) return undefined;
-
-        let current = this.root;
-
-        while (this.comparator(data, current.data) !== 0) {
-            if (this.comparator(data, current.data) === 1) {
-                if (!current.rightNode) return;
-
-                current = current.rightNode;
-            } else {
-                if (!current.leftNode) return;
-
-                current = current.leftNode;
-            }
-        }
-
-        return current;
-    }
-}
+import ContactPair from "./ContactPair";
+import DynamicAABBTree from "./DynamicAABBTree/DynamicAABBTree";
+import { TreeCallback } from "./TreeCallback";
 
 export default class BroadPhase implements TreeCallback {
-    manager: ContactManager;
-    pairBuffer: ContactPair[];
-    moveBuffer: number[];
+  private manager: ContactManager;
+  private pairBuffer: ContactPair[];
+  private moveBuffer: number[];
 
-    constructor(manager: ContactManager) {
-        this.manager = manager;
-        this.pairBuffer = new Array<ContactPair>();
-        this.moveBuffer = new Array<number>();
+  private tree: DynamicAABBTree = new DynamicAABBTree();
+
+  // TODO: Better defaults
+  private currentIndex!: number;
+
+  constructor(manager: ContactManager) {
+    this.manager = manager;
+    this.pairBuffer = new Array<ContactPair>();
+    this.moveBuffer = new Array<number>();
+  }
+
+  BufferMove(id: number): void {
+    this.moveBuffer.push(id);
+  }
+
+  InsertBox(shape: Box, aabb: AABB): void {
+    const id = this.tree.Insert(aabb, shape);
+    shape.broadPhaseIndex = id;
+    this.BufferMove(id);
+  }
+
+  RemoveBox(shape: Box): void {
+    this.tree.Remove(shape.broadPhaseIndex);
+  }
+
+  // Generates the contact list. All previous contacts are returned to the allocator
+  // before generation occurs.
+  UpdatePairs(): void {
+    this.pairBuffer = [];
+
+    // Query the tree with all moving boxs
+    for (var i = 0; i < this.moveBuffer.length; ++i) {
+      this.currentIndex = this.moveBuffer[i];
+      const aabb = this.tree.GetFatAABB(this.currentIndex);
+
+      // @TODO: Use a static and non-static tree and query one against the other.
+      //        This will potentially prevent (gotta think about this more) time
+      //        wasted with queries of static bodies against static bodies, and
+      //        kinematic to kinematic.
+      //this.tree.Query(this, aabb);
     }
 
-    InsertBox(shape: Box, aabb: AABB): void {
-        //const id = Tree.insert(aabb, shape)
+    // Reset the move buffer
+    //MoveBuffer.Clear();
+    this.moveBuffer = [];
+
+    // Sort pairs to expose duplicates
+    //PairBuffer.Sort(ContactPairSorter.Default);
+    //this.pairBuffer.sort(ContactPairSorter.Default)
+
+    // Queue manifolds for solving
+    {
+      var i = 0;
+      while (i < this.pairBuffer.length) {
+        // Add contact to manager
+        var pair = this.pairBuffer[i];
+        // TODO: Can pair.A/B ever be undefined here?
+        Assert(pair.A != undefined && pair.B != undefined);
+        var A = <Box>this.tree.GetUserData(pair.A!);
+        var B = <Box>this.tree.GetUserData(pair.B!);
+        //this.manager.AddContact(A, B);
+
+        ++i;
+
+        // Skip duplicate pairs by iterating i until we find a unique pair
+        while (i < this.pairBuffer.length) {
+          const potentialDup = this.pairBuffer[i];
+
+          if (pair.A != potentialDup.A || pair.B != potentialDup.B) break;
+          ++i;
+        }
+      }
     }
 
-    Callback(id: number): boolean {
-        return true
-    }
+    //            Tree.Validate();
+  }
+
+  Callback(index: number): boolean {
+    if (index == this.currentIndex) return true;
+    const iA = Math.min(index, this.currentIndex);
+    const iB = Math.max(index, this.currentIndex);
+
+    this.pairBuffer.push(new ContactPair(iA, iB));
+
+    return true;
+  }
 }

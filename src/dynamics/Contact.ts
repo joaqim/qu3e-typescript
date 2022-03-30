@@ -67,6 +67,13 @@ export class Manifold {
             this.contacts[i] = new Contact();
         }
     }
+
+    SetPair(a: Box, b: Box) {
+        this.A = a
+        this.B = b
+
+        this.sensor = a.sensor || b.sensor
+    }
 }
 
 export class ContactEdge {
@@ -78,6 +85,9 @@ export class ContactConstraint {
     A?: Box
     B?: Box
 
+    bodyA: Body | undefined
+    bodyB: Body | undefined
+
     edgeA: ContactEdge
     edgeB: ContactEdge
 
@@ -87,10 +97,19 @@ export class ContactConstraint {
     manifold: Manifold
     flags?: ContactFlags
 
-    constructor() {
+    constructor(A: Box, B: Box, bodyA: Body, bodyB: Body, flags: ContactFlags, friction: number, restitution: number) {
         this.manifold = new Manifold()
         this.edgeA = new ContactEdge()
         this.edgeB = new ContactEdge()
+
+        this.A = A
+        this.B = B
+        this.bodyA = bodyA
+        this.bodyB = bodyB
+
+        this.flags = flags
+        this.friction = friction
+        this.restitution = restitution
     }
 }
 

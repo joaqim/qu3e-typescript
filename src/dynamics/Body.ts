@@ -338,7 +338,7 @@ export default class Body {
     private LinearDamping: number;
     private AngularDamping: number;
 
-    private ContactList: List<ContactEdge>
+    ContactList: List<ContactEdge>
 
     CalculateMassData(): void {
         var inertia = Mat3.Diagonal(0);

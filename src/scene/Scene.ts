@@ -49,7 +49,19 @@ export abstract class QueryCallback {
 }
 
 
-export class Scene {
+export default class Scene {
+    private ContactManager: ContactManager;
+
+    private Bodies: List<Body>
+
+    private Gravity: Vec3
+    private Dt: number
+    private Iterations: number
+
+    private NewBox: boolean
+    private AllowSleep: boolean
+    private EnableFriction: boolean
+
     constructor(dt: number, gravity: ReadonlyVec3, iterations: number = 20) {
         this.ContactManager = new ContactManager();
         this.Island = new Island();
@@ -67,6 +79,7 @@ export class Scene {
     //Body[] stack = new Body[256];
     stack: Array<Body> = new Array<Body>(256)
 
+    /*
     // Run the simulation forward in time by dt (fixed timestep). Variable
     // timestep is not supported.
     public Step(Dt: number): void {
@@ -194,7 +207,6 @@ export class Scene {
             Vec3.Identity(ref body.Torque);
         }
     }
-    /*
 
     // Construct a new rigid body. The BodyDef can be reused at the user's
     // discretion, as no reference to the BodyDef is kept.
@@ -417,16 +429,6 @@ Dump(StringBuilder file)
     file.AppendFormat("Free( bodies );\n");
 }
 */
-    private ContactManager: ContactManager;
 
-    private Bodies: List<Body>
-
-    private Gravity: Vec3
-    private Dt: number
-    private Iterations: number
-
-    private NewBox: boolean
-    private AllowSleep: boolean
-    private EnableFriction: boolean
 
 }
