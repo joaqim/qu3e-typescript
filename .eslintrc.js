@@ -7,6 +7,7 @@ module.exports = {
     project: "./tsconfig.json",
   },
   rules: {
+    "no-bitwise": ["error", {"allow": ["|", "&", "~"]}],
     "no-param-reassign": "off",
     "id-length": "off",
     "prefer-const": "error",

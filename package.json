@@ -46,8 +46,7 @@
   },
   "prettier": {
     "bracketSpacing": true,
-    "singleQuote": true,
-    "jsxBracketSameLine": true,
+    "singleQuote": false,
     "trailingComma": "all",
     "printWidth": 80,
     "semi": false
