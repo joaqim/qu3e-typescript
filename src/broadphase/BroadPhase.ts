@@ -20,7 +20,7 @@
  */
 
 import type Box from "@collision/Box"
-import type { AABB } from "@common"
+import { AABB } from "@common"
 import type { ContactManager } from "@dynamics/ContactManager"
 import { ContactPair } from "./ContactPair"
 import DynamicAABBTree from "./DynamicAABBTree"
@@ -40,10 +40,6 @@ export class BroadPhase implements TreeCallback {
     this.manager = manager
     this.pairBuffer = new Array<ContactPair>()
     this.moveBuffer = new Array<number>()
-  }
-
-  public BufferMove(id: number): void {
-    this.moveBuffer.push(id)
   }
 
   public InsertBox(shape: Box, aabb: AABB): void {
@@ -79,7 +75,26 @@ export class BroadPhase implements TreeCallback {
 
     // Sort pairs to expose duplicates
     // PairBuffer.Sort(ContactPairSorter.Default);
-    // this.pairBuffer.sort(ContactPairSorter.Default)
+
+    this.pairBuffer.sort((lhs: ContactPair, rhs: ContactPair): number => {
+      // TODO: make this a modular comparer function
+      // if lhs < rhs => -1
+      // if lhs > rhs => 1
+      // if lhs == rhs => 0
+
+      if (lhs.A === rhs.A) {
+        if (lhs.B > rhs.B) return 1
+
+        if (lhs.B < rhs.B) return -1
+        return 0
+      }
+
+      if (lhs.A > rhs.A) return 1
+
+      if (lhs.A < rhs.A) return -1
+
+      return 0
+    })
 
     // Queue manifolds for solving
     let index = 0
@@ -103,6 +118,18 @@ export class BroadPhase implements TreeCallback {
     }
 
     // Tree.Validate();
+  }
+
+  public Update(id: number, aabb: AABB): void {
+    if (this.tree.Update(id, aabb)) this.BufferMove(id)
+  }
+
+  public TestOverlap(a: number, b: number): boolean {
+    return AABB.AABBtoAABB(this.tree.GetFatAABB(a), this.tree.GetFatAABB(b))
+  }
+
+  public BufferMove(id: number): void {
+    this.moveBuffer.push(id)
   }
 
   public Callback(index: number): boolean {

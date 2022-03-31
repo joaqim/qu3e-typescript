@@ -64,7 +64,7 @@ export default class Body {
 
     this.CalculateMassData()
 
-    this.Scene.ContactManager.Broadphase.InsertBox(box, aabb)
+    this.Scene.ContactManager.BroadPhase.InsertBox(box, aabb)
     this.Scene.NewBox = true
 
     return box
@@ -88,11 +88,11 @@ export default class Body {
       // TODO: Make sure contact is always defined here
       Assert(contact !== undefined)
 
-      if (box === contact!.A || box === contact!.B)
-        this.Scene.ContactManager.RemoveContact(contact!)
+      if (box === contact?.A || box === contact?.B)
+        this.Scene.ContactManager.RemoveContact(contact)
     })
 
-    this.Scene.ContactManager.Broadphase.RemoveBox(box)
+    this.Scene.ContactManager.BroadPhase.RemoveBox(box)
 
     this.CalculateMassData()
     // Scene.Heap.Free((void)box);
@@ -101,7 +101,7 @@ export default class Body {
   // Removes all boxes from this body and the broadphase.
   public RemoveAllBoxes(): void {
     this.Boxes.ForEach((box: Box) =>
-      this.Scene.ContactManager.Broadphase.RemoveBox(box),
+      this.Scene.ContactManager.BroadPhase.RemoveBox(box),
     )
 
     this.Scene.ContactManager.RemoveContactsFromBody(this)
@@ -417,7 +417,7 @@ export default class Body {
   }
 
   private SynchronizeProxies(): void {
-    const broadphase = this.Scene.ContactManager.Broadphase
+    const broadphase = this.Scene.ContactManager.BroadPhase
 
     this.Tx.position = Vec3.Sub(
       this.WorldCenter,

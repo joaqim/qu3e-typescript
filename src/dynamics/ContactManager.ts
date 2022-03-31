@@ -1,12 +1,12 @@
 /**
  *     Qu3e Physics Engine - Typescript Version 1.0
- * 
+ *
  *     Copyright (c) 2014 Randy Gaul http://www.randygaul.net
- * 
+ *
  * 	This software is provided 'as-is', without any express or implied
  * 	warranty. In no event will the authors be held liable for any damages
  * 	arising from the use of this software.
- * 
+ *
  * 	Permission is granted to anyone to use this software for any purpose,
  * 	including commercial applications, and to alter it and redistribute it
  * 	freely, subject to the following restrictions:
@@ -22,9 +22,9 @@
 import BroadPhase from "@broadphase"
 import List from "@collections/List"
 import type Box from "@collision/Box"
-import { ContactConstraint } from "@dynamics"
 import type { ContactListener } from "@scene/Scene"
-import { ContactEdge } from "./Contact/ContactEdge"
+import ContactConstraint from "./Contact/ContactConstraint"
+import type ContactEdge from "./Contact/ContactEdge"
 
 export class ContactManager {
   public BroadPhase: BroadPhase

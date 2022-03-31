@@ -38,7 +38,7 @@ export default class Contact {
 
 // eslint-disable-next-line no-shadow
 export enum ContactFlags {
-  eColliding = 0x00_00_00_01, // Set when contact collides during a step
-  eWasColliding = 0x00_00_00_02, // Set when two objects stop colliding
-  eIsland = 0x00_00_00_04, // For internal marking during island forming
+  Colliding = 0x00_00_00_01, // Set when contact collides during a step
+  WasColliding = 0x00_00_00_02, // Set when two objects stop colliding
+  Island = 0x00_00_00_04, // For internal marking during island forming
 }
