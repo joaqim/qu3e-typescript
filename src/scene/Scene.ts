@@ -24,8 +24,8 @@
 
 import List from "@collections/List"
 import type Box from "@collision/Box"
-import type { ContactConstraint } from "@dynamics"
 import type Body from "@dynamics/Body"
+import type ContactConstraint from "@dynamics/Contact"
 import { ContactManager } from "@dynamics/ContactManager"
 import type { ReadonlyVec3, Vec3 } from "@math"
 
@@ -48,17 +48,17 @@ export abstract class QueryCallback {
 }
 
 export class Scene {
-  private readonly ContactManager: ContactManager
+  public ContactManager: ContactManager
 
-  private readonly Bodies: List<Body>
+  public Bodies: List<Body>
 
-  private readonly Gravity: Vec3
-  private readonly Dt: number
-  private readonly Iterations: number
+  public Gravity: Vec3
+  public Dt: number
+  public Iterations: number
 
   public NewBox: boolean
-  private readonly AllowSleep: boolean
-  private readonly EnableFriction: boolean
+  public AllowSleep: boolean
+  public EnableFriction: boolean
 
   public constructor(dt: number, gravity: ReadonlyVec3, iterations = 20) {
     this.ContactManager = new ContactManager()

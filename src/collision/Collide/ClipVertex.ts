@@ -1,4 +1,4 @@
-import type { FeaturePair } from "@dynamics/Contact"
+import type FeaturePair from "@dynamics/FeaturePair"
 import { Vec3 } from "@math/Vec3"
 
 export class ClipVertex {
@@ -6,7 +6,7 @@ export class ClipVertex {
   public v: Vec3
   public f!: FeaturePair
 
-  constructor() {
+  public constructor() {
     this.v = new Vec3(0, 0, 0)
   }
 }

@@ -24,7 +24,7 @@ import List from "@collections/List"
 import type Box from "@collision/Box"
 import { ContactConstraint } from "@dynamics"
 import type { ContactListener } from "@scene/Scene"
-import type { ContactEdge } from "./Contact"
+import { ContactEdge } from "./Contact/ContactEdge"
 
 export class ContactManager {
   public BroadPhase: BroadPhase

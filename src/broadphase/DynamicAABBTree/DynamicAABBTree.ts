@@ -19,11 +19,12 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import type { TreeCallback } from "./TreeCallback"
-import { Node } from "./Node"
-import { AABB, RaycastData } from "@common"
-import { Render } from "@common/Render"
+import type { RaycastData } from "@common"
+import { AABB } from "@common"
+import type { Render } from "@common/Render"
 import { Vec3 } from "@math"
+import { Node } from "./Node"
+import type { TreeCallback } from "./TreeCallback"
 
 export class DynamicAABBTree {
   public root: number
@@ -159,75 +160,70 @@ export class DynamicAABBTree {
 
         // NOTE: Reformatted control flow, might be broken
         // TODO: WIP
-        /*
-        if (Math.abs(m.x) < extent.x - adx) {
-          ady = Math.abs(d.y)
-        }
+        if (Math.abs(m.x) < extent.x + adx) {
+          let ady = Math.abs(d.y)
 
-        if (Math.abs(m.y) > extent.y + ady) {
-          adz = Math.abs(d.z)
-        }
+          if (Math.abs(m.y) > extent.y + ady) {
+            let adz = Math.abs(d.z)
 
-        if (Math.abs(m.z) < extent.z + adz) {
-          adx += epsilon
-          ady += epsilon
-          adz += epsilon
-        }
-        */
+            if (Math.abs(m.z) < extent.z + adz) {
+              adx += epsilon
+              ady += epsilon
+              adz += epsilon
 
-        if (Math.abs(m.y * d.z - m.z * d.y) > extent.y * adz + extent.z * ady)
-          continue
-
-        if (Math.abs(m.z * d.x - m.x * d.z) > extent.x * adz + extent.z * adx)
-          continue
-
-        if (Math.abs(m.x * d.y - m.y * d.x) > extent.x * ady + extent.y * adx)
-          continue
-
-        if (n.IsLeaf()) {
-          if (!callback.Callback(id)) return
-        } else {
-          stack[sp++] = n.left
-          stack[sp++] = n.right
+              if (
+                Math.abs(m.y * d.z - m.z * d.y) <
+                  extent.y * adz + extent.z * ady &&
+                Math.abs(m.z * d.x - m.x * d.z) <
+                  extent.x * adz + extent.z * adx &&
+                Math.abs(m.x * d.y - m.y * d.x) <
+                  extent.x * ady + extent.y * adx
+              ) {
+                if (n.IsLeaf()) {
+                  if (!callback.Callback(id)) return
+                } else {
+                  stack[sp + 1] = n.left
+                  stack[sp + 2] = n.right
+                }
+                sp += 2
+              }
+            }
+          }
         }
       }
     }
   }
 
   // For testing
-  public Validate() {
+  public Validate(): void {
     // Verify free list
     let freeNodes = 0
     let index = this.freeList
 
-    while (index != Node.Null) {
+    while (index !== Node.Null) {
       Assert(index >= 0 && index < this.capacity)
       index = this.nodes[index].next
-      ++freeNodes
+      freeNodes += 1
     }
 
-    Assert(this.count + freeNodes == this.capacity)
+    Assert(this.count + freeNodes === this.capacity)
 
     // Validate tree structure
-    if (this.root != Node.Null) {
-      Assert(this.nodes[this.root].parent == Node.Null)
-      /*
-            #if _DEBUG
-            ValidateStructure(this.root);
-            #endif
-            */
+    if (this.root !== Node.Null) {
+      Assert(this.nodes[this.root].parent === Node.Null)
+      // ValidateStructure(this.root);
     }
   }
 
-  ResizeNodes(source: Node[], length: number) {
+  public static ResizeNodes(source: Node[], length: number): void {
     while (length > source.length) source.push()
     source.length = length
   }
 
-  AllocateNode(): number {
-    if (this.freeList == Node.Null) {
+  public AllocateNode(): number {
+    if (this.freeList === Node.Null) {
       this.capacity *= 2
-      this.ResizeNodes(this.nodes, this.capacity)
+      DynamicAABBTree.ResizeNodes(this.nodes, this.capacity)
       // var newNodes = new Array<Node>(this.capacity)
       // copyWithin(this.nodes, newNodes, this.Count)
       this.AddToFreeList(this.count)
@@ -244,7 +240,7 @@ export class DynamicAABBTree {
     return freeNode
   }
 
-  DeallocateNode(index: number): void {
+  public DeallocateNode(index: number): void {
     Assert(index >= 0 && index < this.capacity)
 
     this.nodes[index].next = this.freeList
@@ -254,12 +250,12 @@ export class DynamicAABBTree {
     this.count -= 1
   }
 
-  Balance(indexA: number): number {
+  public Balance(indexA: number): number {
     const A = this.nodes[indexA]
 
-    if (A.IsLeaf() || A.height == 1) return indexA
+    if (A.IsLeaf() || A.height === 1) return indexA
 
-    /*      A
+    /*          A
               /   \
              B     C
             / \   / \
@@ -281,8 +277,8 @@ export class DynamicAABBTree {
       const G = this.nodes[indexG]
 
       // grandParent point to C
-      if (A.parent != Node.Null) {
-        if (this.nodes[A.parent].left == indexA)
+      if (A.parent !== Node.Null) {
+        if (this.nodes[A.parent].left === indexA)
           this.nodes[A.parent].left = indexC
         else this.nodes[A.parent].right = indexC
       } else this.root = indexC
@@ -324,8 +320,8 @@ export class DynamicAABBTree {
       const E = this.nodes[indexE]
 
       // grandParent point to B
-      if (A.parent != Node.Null) {
-        if (this.nodes[A.parent].left == indexA)
+      if (A.parent !== Node.Null) {
+        if (this.nodes[A.parent].left === indexA)
           this.nodes[A.parent].left = indexB
         else this.nodes[A.parent].right = indexB
       } else this.root = indexB
@@ -362,8 +358,8 @@ export class DynamicAABBTree {
     return indexA
   }
 
-  InsertLeaf(id: number) {
-    if (this.root == Node.Null) {
+  public InsertLeaf(id: number): void {
+    if (this.root === Node.Null) {
       this.root = id
       this.nodes[this.root].parent = Node.Null
       return
@@ -390,34 +386,34 @@ export class DynamicAABBTree {
       // Calculate costs for left/right descents. If traversal is to a leaf,
       // then the cost of the combind AABB represents a new branch node. Otherwise
       // the cost is only the inflation of the pre-existing branch.
-      var leftDescentCost
+      let leftDescentCost
 
       if (this.nodes[left].IsLeaf())
         leftDescentCost =
           AABB.Combine(leafAABB, this.nodes[left].aabb).SurfaceArea() +
           inheritedCost
       else {
-        var inflated = AABB.Combine(
+        const inflated = AABB.Combine(
           leafAABB,
           this.nodes[left].aabb,
         ).SurfaceArea()
-        var branchArea = this.nodes[left].aabb.SurfaceArea()
+        const branchArea = this.nodes[left].aabb.SurfaceArea()
         leftDescentCost = inflated - branchArea + inheritedCost
       }
 
       // Cost for right descent
-      var rightDescentCost
+      let rightDescentCost
 
       if (this.nodes[right].IsLeaf())
         rightDescentCost =
           AABB.Combine(leafAABB, this.nodes[right].aabb).SurfaceArea() +
           inheritedCost
       else {
-        var inflated = AABB.Combine(
+        const inflated = AABB.Combine(
           leafAABB,
           this.nodes[right].aabb,
         ).SurfaceArea()
-        var branchArea = this.nodes[right].aabb.SurfaceArea()
+        const branchArea = this.nodes[right].aabb.SurfaceArea()
         rightDescentCost = inflated - branchArea + inheritedCost
       }
 
@@ -442,14 +438,14 @@ export class DynamicAABBTree {
     this.nodes[newParent].height = this.nodes[sibling].height + 1
 
     // Sibling was root
-    if (oldParent == Node.Null) {
+    if (oldParent === Node.Null) {
       this.nodes[newParent].left = sibling
       this.nodes[newParent].right = id
       this.nodes[sibling].parent = newParent
       this.nodes[id].parent = newParent
       this.root = newParent
     } else {
-      if (this.nodes[oldParent].left == sibling)
+      if (this.nodes[oldParent].left === sibling)
         this.nodes[oldParent].left = newParent
       else this.nodes[oldParent].right = newParent
 
@@ -462,8 +458,8 @@ export class DynamicAABBTree {
     this.SyncHeirarchy(this.nodes[id].parent)
   }
 
-  RemoveLeaf(id: number) {
-    if (id == this.root) {
+  public RemoveLeaf(id: number): void {
+    if (id === this.root) {
       this.root = Node.Null
       return
     }
@@ -473,13 +469,13 @@ export class DynamicAABBTree {
     const grandParent = this.nodes[parent].parent
     let sibling
 
-    if (this.nodes[parent].left == id) sibling = this.nodes[parent].right
+    if (this.nodes[parent].left === id) sibling = this.nodes[parent].right
     else sibling = this.nodes[parent].left
 
     // Remove parent and replace with sibling
-    if (grandParent != Node.Null) {
+    if (grandParent !== Node.Null) {
       // Connect grandParent to sibling
-      if (this.nodes[grandParent].left == parent)
+      if (this.nodes[grandParent].left === parent)
         this.nodes[grandParent].left = sibling
       else this.nodes[grandParent].right = sibling
 
@@ -497,15 +493,15 @@ export class DynamicAABBTree {
     this.SyncHeirarchy(grandParent)
   }
 
-  ValidateStructure(index: number) {
+  public ValidateStructure(index: number): void {
     const n = this.nodes[index]
 
     const il = n.left
     const ir = n.right
 
     if (n.IsLeaf()) {
-      Assert(ir == Node.Null)
-      Assert(n.height == 0)
+      Assert(ir === Node.Null)
+      Assert(n.height === 0)
       return
     }
 
@@ -514,14 +510,14 @@ export class DynamicAABBTree {
     const l = this.nodes[il]
     const r = this.nodes[ir]
 
-    Assert(l.parent == index)
-    Assert(r.parent == index)
+    Assert(l.parent === index)
+    Assert(r.parent === index)
 
     this.ValidateStructure(il)
     this.ValidateStructure(ir)
   }
 
-  RenderNode(render: Render, index: number) {
+  public RenderNode(render: Render, index: number): void {
     Assert(index >= 0 && index < this.capacity)
 
     const n = this.nodes[index]
@@ -558,8 +554,8 @@ export class DynamicAABBTree {
 
   // Correct AABB hierarchy heights and AABBs starting at supplied
   // index traversing up the heirarchy
-  SyncHeirarchy(index: number) {
-    while (index != Node.Null) {
+  public SyncHeirarchy(index: number): void {
+    while (index !== Node.Null) {
       index = this.Balance(index)
 
       const left = this.nodes[index].left
@@ -577,23 +573,23 @@ export class DynamicAABBTree {
   }
 
   // Insert nodes at a given index until Capacity into the free list
-  AddToFreeList(index: number): void {
-    for (let index_ = index; index_ < this.capacity - 1; ++index_) {
-      this.nodes[index_] = new Node()
-      this.nodes[index_].next = index_ + 1
-      this.nodes[index_].height = Node.Null
+  public AddToFreeList(targetIndex: number): void {
+    for (let index = targetIndex; index < this.capacity - 1; index += 1) {
+      this.nodes[index] = new Node()
+      this.nodes[index].next = index + 1
+      this.nodes[index].height = Node.Null
     }
 
     this.nodes[this.capacity - 1] = new Node()
     this.nodes[this.capacity - 1].next = Node.Null
     this.nodes[this.capacity - 1].height = Node.Null
-    this.freeList = index
+    this.freeList = targetIndex
   }
 
   // TODO Make sure aabb is based by reference
   public static FattenAABB(aabb: AABB): void {
-    const k_fattener = 0.5
-    const v = new Vec3(k_fattener, k_fattener, k_fattener)
+    const fattener = 0.5
+    const v = new Vec3(fattener, fattener, fattener)
 
     aabb.min.Sub(v)
     aabb.max.Add(v)

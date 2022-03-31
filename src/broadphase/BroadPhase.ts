@@ -19,10 +19,10 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import Box from "@collision/Box"
-import { AABB } from "@common"
-import { ContactManager } from "@dynamics/ContactManager"
-import {ContactPair} from "./ContactPair"
+import type Box from "@collision/Box"
+import type { AABB } from "@common"
+import type { ContactManager } from "@dynamics/ContactManager"
+import { ContactPair } from "./ContactPair"
 import DynamicAABBTree from "./DynamicAABBTree"
 import type { TreeCallback } from "./DynamicAABBTree/TreeCallback"
 
@@ -36,41 +36,41 @@ export class BroadPhase implements TreeCallback {
   // TODO: Better defaults
   private currentIndex!: number
 
-  constructor(manager: ContactManager) {
+  public constructor(manager: ContactManager) {
     this.manager = manager
     this.pairBuffer = new Array<ContactPair>()
     this.moveBuffer = new Array<number>()
   }
 
-  BufferMove(id: number): void {
+  public BufferMove(id: number): void {
     this.moveBuffer.push(id)
   }
 
-  InsertBox(shape: Box, aabb: AABB): void {
+  public InsertBox(shape: Box, aabb: AABB): void {
     const id = this.tree.Insert(aabb, shape)
     shape.broadPhaseIndex = id
     this.BufferMove(id)
   }
 
-  RemoveBox(shape: Box): void {
+  public RemoveBox(shape: Box): void {
     this.tree.Remove(shape.broadPhaseIndex)
   }
 
   // Generates the contact list. All previous contacts are returned to the allocator
   // before generation occurs.
-  UpdatePairs(): void {
+  public UpdatePairs(): void {
     this.pairBuffer = []
 
-    // Query the tree with all moving boxs
-    for (var index = 0; index < this.moveBuffer.length; ++index) {
-      this.currentIndex = this.moveBuffer[index]
+    // Query the tree with all moving boxes
+    for (const index of this.moveBuffer) {
+      this.currentIndex = index
       const aabb = this.tree.GetFatAABB(this.currentIndex)
 
       // @TODO: Use a static and non-static tree and query one against the other.
       //        This will potentially prevent (gotta think about this more) time
       //        wasted with queries of static bodies against static bodies, and
       //        kinematic to kinematic.
-      // this.tree.Query(this, aabb);
+      this.tree.QueryAABB(this, aabb)
     }
 
     // Reset the move buffer
@@ -82,35 +82,31 @@ export class BroadPhase implements TreeCallback {
     // this.pairBuffer.sort(ContactPairSorter.Default)
 
     // Queue manifolds for solving
-    {
-      var index = 0
+    let index = 0
 
+    while (index < this.pairBuffer.length) {
+      // Add contact to manager
+      const pair = this.pairBuffer[index]
+      const A = <Box>this.tree.GetUserData(pair.A)
+      const B = <Box>this.tree.GetUserData(pair.B)
+      this.manager.AddContact(A, B)
+
+      index += 1
+
+      // Skip duplicate pairs by iterating index until we find a unique pair
       while (index < this.pairBuffer.length) {
-        // Add contact to manager
-        const pair = this.pairBuffer[index]
-        // TODO: Can pair.A/B ever be undefined here?
-        Assert(pair.A != undefined && pair.B != undefined)
-        const A = <Box>this.tree.GetUserData(pair.A!)
-        const B = <Box>this.tree.GetUserData(pair.B!)
-        // this.manager.AddContact(A, B);
+        const potentialDup = this.pairBuffer[index]
 
-        ++index
-
-        // Skip duplicate pairs by iterating i until we find a unique pair
-        while (index < this.pairBuffer.length) {
-          const potentialDup = this.pairBuffer[index]
-
-          if (pair.A != potentialDup.A || pair.B != potentialDup.B) break
-          ++index
-        }
+        if (pair.A !== potentialDup.A || pair.B !== potentialDup.B) break
+        index += 1
       }
     }
 
-    //            Tree.Validate();
+    // Tree.Validate();
   }
 
-  Callback(index: number): boolean {
-    if (index == this.currentIndex) return true
+  public Callback(index: number): boolean {
+    if (index === this.currentIndex) return true
     const indexA = Math.min(index, this.currentIndex)
     const indexB = Math.max(index, this.currentIndex)
 

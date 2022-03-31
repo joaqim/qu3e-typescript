@@ -20,11 +20,13 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import { RaycastData, AABB } from "@common"
-import { Render } from "@common/Render"
-import { FixedArray } from "@containers"
-import  Body  from "@dynamics/Body"
-import { Vec3, Mat3, ReadonlyVec3, ReadonlyMat3, Vec3Axis, Transform } from "@math"
+import type { RaycastData } from "@common"
+import { AABB } from "@common"
+import type { Render } from "@common/Render"
+import type { FixedArray } from "@containers"
+import type Body from "@dynamics/Body"
+import type { ReadonlyVec3, ReadonlyMat3, Vec3Axis } from "@math"
+import { Vec3, Mat3, Transform } from "@math"
 
 export class MassData {
   // TODO: Better defaults

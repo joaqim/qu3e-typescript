@@ -19,22 +19,26 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import  List  from "@collections/List"
-import Box, { BoxDefinition, CreateBox } from "@collision/Box"
+import List from "@collections/List"
+import type Box from "@collision/Box"
+import type { BoxDefinition } from "@collision/Box"
+import { CreateBox } from "@collision/Box"
 import { AABB } from "@common"
-import { Render } from "@common/Render"
-import { ContactEdge, BodyDefinition } from "@dynamics"
-import { ReadonlyVec3, Vec3, Mat3, Quaternion, Transform } from "@math"
-import { Scene } from "@scene/Scene"
+import type { Render } from "@common/Render"
+import type { BodyDefinition } from "@dynamics"
+import type ContactEdge from "@dynamics/Contact/ContactEdge"
+import type { ReadonlyVec3 } from "@math"
+import { Mat3, Quaternion, Transform, Vec3 } from "@math"
+import type { Scene } from "@scene/Scene"
 
-// eslint-disable-next-line max-classes-per-file
-
+// eslint-disable-next-line no-shadow
 export enum BodyType {
-  StaticBody,
-  DynamicBody,
-  KinematicBody,
+  StaticBody = 0,
+  DynamicBody = 1,
+  KinematicBody = 2,
 }
 
+// eslint-disable-next-line no-shadow
 export enum BodyFlags {
   Awake = 0x0_01,
   Active = 0x0_02,
@@ -70,8 +74,8 @@ export default class Body {
   // to recompute its mass if the body is dynamic. Frees the memory
   // pointed to by the box pointer.
   public RemoveBox(box: Box): void {
-    Assert(box != null)
-    Assert(box.body == this)
+    Assert(box !== null)
+    Assert(box.body === this)
 
     const found = this.Boxes.Remove(box)
 
@@ -82,9 +86,9 @@ export default class Body {
     this.ContactList.ForEach((edge: ContactEdge) => {
       const contact = edge.constraint
       // TODO: Make sure contact is always defined here
-      Assert(contact != undefined)
+      Assert(contact !== undefined)
 
-      if (box == contact!.A || box == contact!.B)
+      if (box === contact!.A || box === contact!.B)
         this.Scene.ContactManager.RemoveContact(contact!)
     })
 
@@ -147,7 +151,7 @@ export default class Body {
     }
   }
 
-  public SetToSleep() {
+  public SetToSleep(): void {
     this.Flags &= ~BodyFlags.Awake
     this.SleepTime = 0
     Vec3.Identity(this.LinearVelocity)
@@ -191,7 +195,7 @@ export default class Body {
     this.LinearVelocity = v
   }
 
-  public GetAngularVelocity = ():Vec3 => this.AngularVelocity
+  public GetAngularVelocity = (): Vec3 => this.AngularVelocity
 
   public SetAngularVelocity(v: ReadonlyVec3): void {
     // Velocity of static bodies cannot be adjusted
@@ -202,16 +206,16 @@ export default class Body {
   }
 
   public CanCollide(other: Body): boolean {
-    if (this == other) return false
+    if (this === other) return false
 
     // Every collision must have at least one dynamic body involved
     if (
       this.Flags & BodyFlags.Dynamic &&
-      (other.Flags & BodyFlags.Dynamic) == 0
+      (other.Flags & BodyFlags.Dynamic) === 0
     )
       return false
 
-    if ((this.Layers & other.Layers) == 0) return false
+    if ((this.Layers & other.Layers) === 0) return false
     return true
   }
 
@@ -243,61 +247,75 @@ export default class Body {
     })
   }
 
-  public GetTransform = () => this.Tx
-  public GetFlags = () => this.Flags
-  public SetLayers = (layers: number) => (this.Layers = layers)
-  public GetLayers = () => this.Layers
-  public GetQuaternion = () => this.Q
-  public GetUserData = () => this.UserData
-  public SetLinearDamping = (damping: number) => (this.LinearDamping = damping)
-  public GetLinearDamping = () => this.LinearDamping
-  public SetAngularDamping = (damping: number) =>
-    (this.AngularDamping = damping)
+  public GetTransform = (): Transform => this.Tx
+  public GetFlags = (): BodyFlags => this.Flags
+  public SetLayers(layers: number): void {
+    this.Layers = layers
+  }
 
-  public GetAngularDamping = () => this.AngularDamping
-  public GetMass = () => this.Mass
-  public GetInvMass = () => this.InvMass
+  public GetLayers = (): number => this.Layers
+  public GetQuaternion = (): Quaternion => this.Q
+  public GetUserData = (): unknown => this.UserData
+  public SetLinearDamping(damping: number): void {
+    this.LinearDamping = damping
+  }
 
-  public constructor(def: BodyDefinition, scene: Scene) {
-    this.LinearVelocity = def.linearVelocity
-    this.AngularVelocity = def.angularVelocity
+  public GetLinearDamping = (): number => this.LinearDamping
+  public SetAngularDamping(damping: number): void {
+    this.AngularDamping = damping
+  }
+
+  public GetAngularDamping = (): number => this.AngularDamping
+  public GetMass = (): number => this.Mass
+  public GetInvMass = (): number => this.InvMass
+
+  public constructor(definition: BodyDefinition, scene: Scene) {
+    this.LinearVelocity = definition.linearVelocity
+    this.AngularVelocity = definition.angularVelocity
     this.Force = Vec3.Identity()
     this.Torque = Vec3.Identity()
     // TODO: Make sure angle and expected radians is of right type
-    this.Q = new Quaternion([Vec3.Normalize(def.axis), def.angle])
+    this.Q = new Quaternion([Vec3.Normalize(definition.axis), definition.angle])
 
-    this.Tx = new Transform(this.Q.ToMat3(), def.position)
+    this.Tx = new Transform(this.Q.ToMat3(), definition.position)
     this.SleepTime = 0
-    this.GravityScale = def.gravityScale
-    this.Layers = def.layers
-    this.UserData = def.userData
+    this.GravityScale = definition.gravityScale
+    this.Layers = definition.layers
+    this.UserData = definition.userData
     this.Scene = scene
     this.Flags = 0
-    this.LinearDamping = def.linearDamping
-    this.AngularDamping = def.angularDamping
+    this.LinearDamping = definition.linearDamping
+    this.AngularDamping = definition.angularDamping
 
-    if (def.bodyType == BodyType.DynamicBody) {
-      this.Flags |= BodyFlags.Dynamic
-    } else if (def.bodyType == BodyType.StaticBody) {
-      this.Flags |= BodyFlags.Static
-      this.LinearVelocity = Vec3.Identity()
-      this.AngularVelocity = Vec3.Identity()
-      this.Force = Vec3.Identity()
-      this.Torque = Vec3.Identity()
-    } else if (def.bodyType == BodyType.KinematicBody)
-      this.Flags |= BodyFlags.Kinematic
+    switch (definition.bodyType) {
+      case BodyType.DynamicBody:
+        this.Flags |= BodyFlags.Dynamic
+        break
+      case BodyType.StaticBody:
+        this.Flags |= BodyFlags.Static
+        this.LinearVelocity = Vec3.Identity()
+        this.AngularVelocity = Vec3.Identity()
+        this.Force = Vec3.Identity()
+        this.Torque = Vec3.Identity()
+        break
+      case BodyType.KinematicBody:
+        this.Flags |= BodyFlags.Kinematic
+        break
+      default:
+        break
+    }
 
-    if (def.allowSleep) this.Flags |= BodyFlags.AllowSleep
+    if (definition.allowSleep) this.Flags |= BodyFlags.AllowSleep
 
-    if (def.awake) this.Flags |= BodyFlags.Awake
+    if (definition.awake) this.Flags |= BodyFlags.Awake
 
-    if (def.active) this.Flags |= BodyFlags.Active
+    if (definition.active) this.Flags |= BodyFlags.Active
 
-    if (def.lockAxisX) this.Flags |= BodyFlags.LockAxisX
+    if (definition.lockAxisX) this.Flags |= BodyFlags.LockAxisX
 
-    if (def.lockAxisY) this.Flags |= BodyFlags.LockAxisY
+    if (definition.lockAxisY) this.Flags |= BodyFlags.LockAxisY
 
-    if (def.lockAxisZ) this.Flags |= BodyFlags.LockAxisZ
+    if (definition.lockAxisZ) this.Flags |= BodyFlags.LockAxisZ
 
     this.Boxes = new List<Box>()
     this.ContactList = new List<ContactEdge>()
@@ -326,8 +344,8 @@ export default class Body {
   private Flags: BodyFlags
 
   private readonly Boxes: List<Box>
-  private readonly UserData: any
-  private Scene: Scene
+  private readonly UserData: unknown
+  public Scene: Scene
   // private Body Next;
   // private Body Prev;
   private readonly IslandIndex?: number
@@ -335,7 +353,7 @@ export default class Body {
   private LinearDamping: number
   private AngularDamping: number
 
-  ContactList: List<ContactEdge>
+  public ContactList: List<ContactEdge>
 
   public CalculateMassData(): void {
     const inertia = Mat3.Diagonal(0)
@@ -357,7 +375,7 @@ export default class Body {
     const lc = Vec3.Identity()
 
     this.Boxes.ForEach((box: Box) => {
-      if (box.density != 0) {
+      if (box.density !== 0) {
         const md = box.ComputeMass()
         mass += md.mass
         inertia.Add(md.inertia)

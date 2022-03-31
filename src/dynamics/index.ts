@@ -1,2 +1,5 @@
 export * from "./Body"
 export * from "./Contact"
+export * from "./FeaturePair"
+export * from "./Island"
+export * from "./Manifold"

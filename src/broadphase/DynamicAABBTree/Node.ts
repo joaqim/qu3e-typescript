@@ -1,4 +1,4 @@
-import { AABB } from "@common"
+import type { AABB } from "@common"
 
 export class Node {
   // Fat AABB for leafs, bounding AABB for branches

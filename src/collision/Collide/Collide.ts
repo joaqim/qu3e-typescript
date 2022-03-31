@@ -20,8 +20,8 @@
  */
 
 import type { FixedArray } from "@containers"
-import type { Manifold } from "@dynamics/Contact"
-import { FeaturePair } from "@dynamics/Contact"
+import FeaturePair from "@dynamics/FeaturePair"
+import type Manifold from "@dynamics/Manifold"
 import { Mat3, Transform, Vec3 } from "@math"
 import type { Vec3Axis } from "@math/Vec3"
 import type Box from "../Box/Box"
@@ -605,6 +605,7 @@ export default abstract class Collide {
     let s
     let aMax = -Number.MAX_SAFE_INTEGER
     let bMax = -Number.MAX_SAFE_INTEGER
+    // eslint-disable-next-line unicorn/prevent-abbreviations
     let eMax = -Number.MAX_SAFE_INTEGER
 
     // TODO: Are these still valid in Typescript? ( from C# )
@@ -615,6 +616,7 @@ export default abstract class Collide {
     */
     let aAxis = 0
     let bAxis = 0
+    // eslint-disable-next-line unicorn/prevent-abbreviations
     let eAxis = 0
 
     let nA = new Vec3()
@@ -635,42 +637,42 @@ export default abstract class Collide {
     )
 
     if (trackFaceResult.success) return
-    ({ axis: aAxis, sMax: aMax, axisNormal: nA } = trackFaceResult)
+    ;({ axis: aAxis, sMax: aMax, axisNormal: nA } = trackFaceResult)
 
     // a's y axis
     s = Math.abs(t.y) - (extentA.y + Vec3.Dot(absC.ey, extentB))
     trackFaceResult = this.TrackFaceAxis(aAxis, 1, s, aMax, atx.rotation.ey, nA)
 
     if (trackFaceResult.success) return
-    ({ axis: aAxis, sMax: aMax, axisNormal: nA } = trackFaceResult)
+    ;({ axis: aAxis, sMax: aMax, axisNormal: nA } = trackFaceResult)
 
     // a's z axis
     s = Math.abs(t.z) - (extentA.z + Vec3.Dot(absC.ez, extentB))
     trackFaceResult = this.TrackFaceAxis(aAxis, 2, s, aMax, atx.rotation.ez, nA)
 
     if (trackFaceResult.success) return
-    ({ axis: aAxis, sMax: aMax, axisNormal: nA } = trackFaceResult)
+    ;({ axis: aAxis, sMax: aMax, axisNormal: nA } = trackFaceResult)
 
     // b's x axis
     s = Math.abs(Vec3.Dot(t, C.ex)) - (extentB.x + Vec3.Dot(absC.ex, extentA))
     trackFaceResult = this.TrackFaceAxis(bAxis, 3, s, bMax, btx.rotation.ex, nB)
 
     if (trackFaceResult.success) return
-    ({ axis: bAxis, sMax: bMax, axisNormal: nB } = trackFaceResult)
+    ;({ axis: bAxis, sMax: bMax, axisNormal: nB } = trackFaceResult)
 
     // b's y axis
     s = Math.abs(Vec3.Dot(t, C.ey)) - (extentB.y + Vec3.Dot(absC.ey, extentA))
     trackFaceResult = this.TrackFaceAxis(bAxis, 4, s, bMax, btx.rotation.ey, nB)
 
     if (trackFaceResult.success) return
-    ({ axis: bAxis, sMax: bMax, axisNormal: nB } = trackFaceResult)
+    ;({ axis: bAxis, sMax: bMax, axisNormal: nB } = trackFaceResult)
 
     // b's z axis
     s = Math.abs(Vec3.Dot(t, C.ez)) - (extentB.z + Vec3.Dot(absC.ez, extentA))
     trackFaceResult = this.TrackFaceAxis(bAxis, 5, s, bMax, btx.rotation.ez, nB)
 
     if (trackFaceResult.success) return
-    ({ axis: bAxis, sMax: bMax, axisNormal: nB } = trackFaceResult)
+    ;({ axis: bAxis, sMax: bMax, axisNormal: nB } = trackFaceResult)
 
     if (!parallel) {
       // Edge axis checks
@@ -693,7 +695,7 @@ export default abstract class Collide {
       )
 
       if (trackFaceResult.success) return
-      ({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
+      ;({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
 
       // Cross( a.x, b.y )
       rA = extentA.y * absC.GetByAxis(1, 2) + extentA.z * absC.GetByAxis(1, 1)
@@ -710,7 +712,7 @@ export default abstract class Collide {
       )
 
       if (trackFaceResult.success) return
-      ({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
+      ;({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
 
       // Cross( a.x, b.z )
       rA = extentA.y * absC.GetByAxis(2, 2) + extentA.z * absC.GetByAxis(2, 1)
@@ -727,7 +729,7 @@ export default abstract class Collide {
       )
 
       if (trackFaceResult.success) return
-      ({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
+      ;({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
 
       // Cross( a.y, b.x )
       rA = extentA.x * absC.GetByAxis(0, 2) + extentA.z * absC.GetByAxis(0, 0)
@@ -744,7 +746,7 @@ export default abstract class Collide {
       )
 
       if (trackFaceResult.success) return
-      ({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
+      ;({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
 
       // Cross( a.y, b.y )
       rA = extentA.x * absC.GetByAxis(1, 2) + extentA.z * absC.GetByAxis(1, 0)
@@ -761,7 +763,7 @@ export default abstract class Collide {
       )
 
       if (trackFaceResult.success) return
-      ({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
+      ;({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
 
       // Cross( a.y, b.z )
       rA = extentA.x * absC.GetByAxis(2, 2) + extentA.z * absC.GetByAxis(2, 0)
@@ -778,7 +780,7 @@ export default abstract class Collide {
       )
 
       if (trackFaceResult.success) return
-      ({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
+      ;({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
 
       // Cross( a.z, b.x )
       rA = extentA.x * absC.GetByAxis(0, 1) + extentA.y * absC.GetByAxis(0, 0)
@@ -795,7 +797,7 @@ export default abstract class Collide {
       )
 
       if (trackFaceResult.success) return
-      ({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
+      ;({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
 
       // Cross( a.z, b.y )
       rA = extentA.x * absC.GetByAxis(1, 1) + extentA.y * absC.GetByAxis(1, 0)
@@ -812,7 +814,7 @@ export default abstract class Collide {
       )
 
       if (trackFaceResult.success) return
-      ({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
+      ;({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
 
       // Cross( a.z, b.z )
       rA = extentA.x * absC.GetByAxis(2, 1) + extentA.y * absC.GetByAxis(2, 0)
@@ -829,22 +831,22 @@ export default abstract class Collide {
       )
 
       if (trackFaceResult.success) return
-      ({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
+      ;({ axis: eAxis, sMax: eMax, axisNormal: nE } = trackFaceResult)
     }
 
     // Artificial axis bias to improve frame coherence
-    const kRelTol = 0.95
-    const kAbsTol = 0.01
+    const relativeTol = 0.95
+    const absoluteTol = 0.01
     let axis
     let sMax
     let n = new Vec3()
     const faceMax = Math.max(aMax, bMax)
 
-    if (kRelTol * eMax > faceMax + kAbsTol) {
+    if (relativeTol * eMax > faceMax + absoluteTol) {
       axis = eAxis
       sMax = eMax
       n = nE
-    } else if (kRelTol * bMax > aMax + kAbsTol) {
+    } else if (relativeTol * bMax > aMax + absoluteTol) {
       axis = bAxis
       sMax = bMax
       n = nB
@@ -854,48 +856,51 @@ export default abstract class Collide {
       n = nA
     }
 
-    if (Vec3.Dot(n, Vec3.Sub(btx.position, atx.position)) < 0) n = Vec3.Inverse(n)
+    if (Vec3.Dot(n, Vec3.Sub(btx.position, atx.position)) < 0)
+      n = Vec3.Inverse(n)
 
     if (axis < 6) {
       let rtx: Transform
       let itx: Transform
-      let eR: Vec3
-      let eI: Vec3
+      let extentR: Vec3
+      let extentI: Vec3
       let flip: boolean
 
       if (axis < 3) {
         rtx = atx
         itx = btx
-        eR = extentA
-        eI = extentB
+        extentR = extentA
+        extentI = extentB
         flip = false
       } else {
         rtx = btx
         itx = atx
-        eR = extentB
-        eI = extentA
+        extentR = extentB
+        extentI = extentA
         flip = true
         n = Vec3.Inverse(n)
       }
 
       // Compute reference and incident edge information necessary for clipping
 
-      this.ComputeIncidentFace(itx, eI, n, this.incident)
+      this.ComputeIncidentFace(itx, extentI, n, this.incident)
 
       // basis: Mat3;
       // e: Vec3;
-      const {
-        basis,
-        extent: e,
-        result,
-      } = this.ComputeReferenceEdgesAndBasis(eR, rtx, n, axis, this.clipEdges)
+      const { basis, extent, result } = this.ComputeReferenceEdgesAndBasis(
+        extentR,
+        rtx,
+        n,
+        axis,
+        this.clipEdges,
+      )
       // NOTE: maybe redundant assignment
       this.clipEdges = result
 
       // Clip the incident face against the reference face side planes
       const resultNumber = this.Clip(
         rtx.position,
-        e,
+        extent,
         this.clipEdges,
         basis,
         this.incident,
@@ -903,14 +908,14 @@ export default abstract class Collide {
         this.depths,
       )
 
-      if (resultNumber != 0) {
+      if (resultNumber !== 0) {
         m.contactCount = resultNumber
         m.normal = flip ? Vec3.Inverse(n) : n
 
-        for (let index = 0; index < resultNumber; ++index) {
-          var c = m.contacts[index]
+        for (let index = 0; index < resultNumber; index += 1) {
+          const c = m.contacts[index]
 
-          var pair = this.results[index].f
+          const pair = this.results[index].f
 
           if (flip) {
             ;[pair.inI, pair.inR] = [pair.inR, pair.inI]
@@ -938,8 +943,8 @@ export default abstract class Collide {
       m.normal = n
       m.contactCount = 1
 
-      var c = m.contacts[0]
-      var pair = new FeaturePair()
+      const c = m.contacts[0]
+      const pair = new FeaturePair()
       pair.key = axis
       c.fp = pair
       c.penetration = sMax
