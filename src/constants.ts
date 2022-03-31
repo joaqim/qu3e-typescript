@@ -1,1 +1,1 @@
-export const epsilon = 0.000_01;
+export const epsilon = 0.000_01

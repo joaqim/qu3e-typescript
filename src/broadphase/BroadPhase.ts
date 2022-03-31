@@ -19,51 +19,52 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import type Box from "@collision/Box";
-import type AABB from "@common/geometry/AABB";
-import ContactPair from "./ContactPair";
-import DynamicAABBTree from "./DynamicAABBTree/DynamicAABBTree";
-import type { TreeCallback } from "./TreeCallback";
+import Box from "@collision/Box"
+import { AABB } from "@common"
+import { ContactManager } from "@dynamics/ContactManager"
+import {ContactPair} from "./ContactPair"
+import DynamicAABBTree from "./DynamicAABBTree"
+import type { TreeCallback } from "./DynamicAABBTree/TreeCallback"
 
-export default class BroadPhase implements TreeCallback {
-  private readonly manager: ContactManager;
-  private pairBuffer: ContactPair[];
-  private moveBuffer: number[];
+export class BroadPhase implements TreeCallback {
+  private readonly manager: ContactManager
+  private pairBuffer: ContactPair[]
+  private moveBuffer: number[]
 
-  private readonly tree: DynamicAABBTree = new DynamicAABBTree();
+  private readonly tree: DynamicAABBTree = new DynamicAABBTree()
 
   // TODO: Better defaults
-  private currentIndex!: number;
+  private currentIndex!: number
 
   constructor(manager: ContactManager) {
-    this.manager = manager;
-    this.pairBuffer = new Array<ContactPair>();
-    this.moveBuffer = new Array<number>();
+    this.manager = manager
+    this.pairBuffer = new Array<ContactPair>()
+    this.moveBuffer = new Array<number>()
   }
 
   BufferMove(id: number): void {
-    this.moveBuffer.push(id);
+    this.moveBuffer.push(id)
   }
 
   InsertBox(shape: Box, aabb: AABB): void {
-    const id = this.tree.Insert(aabb, shape);
-    shape.broadPhaseIndex = id;
-    this.BufferMove(id);
+    const id = this.tree.Insert(aabb, shape)
+    shape.broadPhaseIndex = id
+    this.BufferMove(id)
   }
 
   RemoveBox(shape: Box): void {
-    this.tree.Remove(shape.broadPhaseIndex);
+    this.tree.Remove(shape.broadPhaseIndex)
   }
 
   // Generates the contact list. All previous contacts are returned to the allocator
   // before generation occurs.
   UpdatePairs(): void {
-    this.pairBuffer = [];
+    this.pairBuffer = []
 
     // Query the tree with all moving boxs
     for (var index = 0; index < this.moveBuffer.length; ++index) {
-      this.currentIndex = this.moveBuffer[index];
-      const aabb = this.tree.GetFatAABB(this.currentIndex);
+      this.currentIndex = this.moveBuffer[index]
+      const aabb = this.tree.GetFatAABB(this.currentIndex)
 
       // @TODO: Use a static and non-static tree and query one against the other.
       //        This will potentially prevent (gotta think about this more) time
@@ -74,7 +75,7 @@ export default class BroadPhase implements TreeCallback {
 
     // Reset the move buffer
     // MoveBuffer.Clear();
-    this.moveBuffer = [];
+    this.moveBuffer = []
 
     // Sort pairs to expose duplicates
     // PairBuffer.Sort(ContactPairSorter.Default);
@@ -82,25 +83,25 @@ export default class BroadPhase implements TreeCallback {
 
     // Queue manifolds for solving
     {
-      var index = 0;
+      var index = 0
 
       while (index < this.pairBuffer.length) {
         // Add contact to manager
-        const pair = this.pairBuffer[index];
+        const pair = this.pairBuffer[index]
         // TODO: Can pair.A/B ever be undefined here?
-        Assert(pair.A != undefined && pair.B != undefined);
-        const A = <Box>this.tree.GetUserData(pair.A!);
-        const B = <Box>this.tree.GetUserData(pair.B!);
+        Assert(pair.A != undefined && pair.B != undefined)
+        const A = <Box>this.tree.GetUserData(pair.A!)
+        const B = <Box>this.tree.GetUserData(pair.B!)
         // this.manager.AddContact(A, B);
 
-        ++index;
+        ++index
 
         // Skip duplicate pairs by iterating i until we find a unique pair
         while (index < this.pairBuffer.length) {
-          const potentialDup = this.pairBuffer[index];
+          const potentialDup = this.pairBuffer[index]
 
-          if (pair.A != potentialDup.A || pair.B != potentialDup.B) break;
-          ++index;
+          if (pair.A != potentialDup.A || pair.B != potentialDup.B) break
+          ++index
         }
       }
     }
@@ -109,12 +110,12 @@ export default class BroadPhase implements TreeCallback {
   }
 
   Callback(index: number): boolean {
-    if (index == this.currentIndex) return true;
-    const indexA = Math.min(index, this.currentIndex);
-    const indexB = Math.max(index, this.currentIndex);
+    if (index == this.currentIndex) return true
+    const indexA = Math.min(index, this.currentIndex)
+    const indexB = Math.max(index, this.currentIndex)
 
-    this.pairBuffer.push(new ContactPair(indexA, indexB));
+    this.pairBuffer.push(new ContactPair(indexA, indexB))
 
-    return true;
+    return true
   }
 }

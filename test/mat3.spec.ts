@@ -1,5 +1,5 @@
 import { expect } from "chai"
-import Mat3 from "../src/math/Mat3"
+import {Mat3} from "../src/math"
 
 describe('mat3', () => {
   it('transposes', () => {

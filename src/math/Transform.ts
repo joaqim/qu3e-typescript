@@ -19,18 +19,18 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import HalfSpace from "@common/geometry/HalfSpace";
-import Mat3 from "./Mat3";
-import type { ReadonlyVec3 } from "./Vec3";
-import Vec3 from "./Vec3";
+import { HalfSpace } from "@common/geometry"
+import { Mat3 } from "@math"
+import type { ReadonlyVec3 } from "./Vec3"
+import { Vec3 } from "./Vec3"
 
-export default class Transform {
-  position!: Vec3;
-  rotation!: Mat3;
+export class Transform {
+  public position!: Vec3
+  public rotation!: Mat3
 
-  constructor(rotation: Mat3, position: Vec3) {
-    this.rotation = rotation;
-    this.position = position;
+  public constructor(rotation: Mat3, position: Vec3) {
+    this.rotation = rotation
+    this.position = position
   }
 
   /**
@@ -39,26 +39,23 @@ export default class Transform {
   public static MulWithVec3(
     tx: Transform,
     v: ReadonlyVec3,
-    scale?: ReadonlyVec3
+    scale?: ReadonlyVec3,
   ): Vec3 {
-    return Mat3.MultiplyByVec3(
-      tx.rotation,
-      scale ? Vec3.Multiply(v, scale) : v
-    );
+    return Mat3.MultiplyByVec3(tx.rotation, scale ? Vec3.Multiply(v, scale) : v)
   }
 
   /**
    * MulMat3WithVec3
    */
   public static MulMat3WithVec3(r: Mat3, v: Vec3): Vec3 {
-    return Mat3.MultiplyByVec3(r, v);
+    return Mat3.MultiplyByVec3(r, v)
   }
 
   /**
    * MulMat3
    */
   public static MulMat3(r: Mat3, q: Mat3): Mat3 {
-    return r.Multiply(q);
+    return r.Multiply(q)
   }
 
   /**
@@ -67,8 +64,8 @@ export default class Transform {
   public static Mul(t: Transform, u: Transform): Transform {
     return new Transform(
       Transform.MulMat3(u.rotation, u.rotation),
-      Transform.MulMat3WithVec3(u.rotation, u.position)
-    );
+      Transform.MulMat3WithVec3(u.rotation, u.position),
+    )
   }
 
   /**
@@ -77,14 +74,14 @@ export default class Transform {
   public static MulWithHalfSpace(
     tx: Transform,
     p: HalfSpace,
-    scale?: ReadonlyVec3
+    scale?: ReadonlyVec3,
   ): HalfSpace {
-    let origin = p.Origin();
+    let origin = p.Origin()
     origin = scale
       ? Transform.MulWithVec3(tx, origin, scale)
-      : Transform.MulWithVec3(tx, origin);
-    const normal = Transform.MulMat3WithVec3(tx.rotation, p.normal);
-    return new HalfSpace(normal, Vec3.Dot(origin, normal));
+      : Transform.MulWithVec3(tx, origin)
+    const normal = Transform.MulMat3WithVec3(tx.rotation, p.normal)
+    return new HalfSpace(normal, Vec3.Dot(origin, normal))
   }
 
   /**
@@ -93,22 +90,22 @@ export default class Transform {
   public static MulTWithVec3(tx: Transform, v: ReadonlyVec3): Vec3 {
     return Mat3.MultiplyByVec3(
       Mat3.Transpose(tx.rotation),
-      Vec3.Sub(v, tx.position)
-    );
+      Vec3.Sub(v, tx.position),
+    )
   }
 
   /**
    * MulTMat3WithVec3
    */
   public static MulTMat3WithVec3(r: Mat3, v: ReadonlyVec3): Vec3 {
-    return Mat3.MultiplyByVec3(Mat3.Transpose(r), v);
+    return Mat3.MultiplyByVec3(Mat3.Transpose(r), v)
   }
 
   /**
    * MultTMat3
    */
   public static MultTMat3(r: Mat3, q: Mat3): Mat3 {
-    return Mat3.Transpose(r).Multiply(q);
+    return Mat3.Transpose(r).Multiply(q)
   }
 
   /**
@@ -117,24 +114,24 @@ export default class Transform {
   public static MulT(t: Transform, u: Transform): Transform {
     return new Transform(
       this.MulMat3(t.rotation, u.rotation),
-      this.MulMat3WithVec3(t.rotation, u.position.Sub(t.position))
-    );
+      this.MulMat3WithVec3(t.rotation, u.position.Sub(t.position)),
+    )
   }
 
   /**
    * MulTHalfSpace
    */
   public static MulTHalfSpace(tx: Transform, p: HalfSpace): HalfSpace {
-    let origin = p.normal.MultiplyByNumber(p.distance);
-    origin = Transform.MulTWithVec3(tx, origin);
-    const n = Transform.MulTMat3WithVec3(tx.rotation, p.normal);
-    return new HalfSpace(n, Vec3.Dot(origin, n));
+    let origin = p.normal.MultiplyByNumber(p.distance)
+    origin = Transform.MulTWithVec3(tx, origin)
+    const n = Transform.MulTMat3WithVec3(tx.rotation, p.normal)
+    return new HalfSpace(n, Vec3.Dot(origin, n))
   }
 
   /**
    * Identity
    */
-  public static get Identity() {
-    return new Transform(Mat3.Identity(), Vec3.Identity());
+  public static get Identity(): Transform {
+    return new Transform(Mat3.Identity(), Vec3.Identity())
   }
 }

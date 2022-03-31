@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { epsilon } from '../src/constants'
-import Vec3, { ReadonlyVec3 } from '../src/math/Vec3'
+import { ReadonlyVec3, Vec3 } from '../src/math'
 
 describe('Vec3', () => {
 

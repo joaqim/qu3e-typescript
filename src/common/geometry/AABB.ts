@@ -19,14 +19,14 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import type { ReadonlyVec3 } from "@math/Vec3";
-import Vec3 from "@math/Vec3";
+import type { ReadonlyVec3 } from "@math/Vec3"
+import {Vec3} from "@math/Vec3"
 
-export type ReadonlyAABB = Readonly<AABB>;
+export type ReadonlyAABB = Readonly<AABB>
 
-export default class AABB {
-  min: Vec3;
-  max: Vec3;
+export class AABB {
+  min: Vec3
+  max: Vec3
 
   constructor(min?: ReadonlyVec3, max?: ReadonlyVec3) {
     this.max =
@@ -34,15 +34,15 @@ export default class AABB {
       new Vec3(
         Number.MIN_SAFE_INTEGER,
         Number.MIN_SAFE_INTEGER,
-        Number.MIN_SAFE_INTEGER
-      );
+        Number.MIN_SAFE_INTEGER,
+      )
     this.min =
       min ||
       new Vec3(
         Number.MAX_SAFE_INTEGER,
         Number.MAX_SAFE_INTEGER,
-        Number.MAX_SAFE_INTEGER
-      );
+        Number.MAX_SAFE_INTEGER,
+      )
   }
 
   // http://box2d.org/2014/02/computing-a-basis/
@@ -51,23 +51,23 @@ export default class AABB {
     // Then 3*s*s = 1, s = sqrt(1/3) = 0.57735027. This means that at least one component of a
     // unit vector must be greater or equal to 0.57735027. Can use SIMD select operation.
 
-    if (Math.abs(a.x) >= 0.577_350_27) b.SetRow(a.y, -a.x, 0);
-    else b.SetRow(0, a.z, -a.y);
+    if (Math.abs(a.x) >= 0.577_350_27) b.SetRow(a.y, -a.x, 0)
+    else b.SetRow(0, a.z, -a.y)
 
-    b.Normalize();
-    c = Vec3.Cross(a, b);
+    b.Normalize()
+    c = Vec3.Cross(a, b)
 
-    return { b, c };
+    return { b, c }
   }
 
   static AABBtoAABB(a: ReadonlyAABB, b: ReadonlyAABB): boolean {
-    if (a.max.x < b.min.x || a.min.x > b.max.x) return false;
+    if (a.max.x < b.min.x || a.min.x > b.max.x) return false
 
-    if (a.max.y < b.min.y || a.min.y > b.max.y) return false;
+    if (a.max.y < b.min.y || a.min.y > b.max.y) return false
 
-    if (a.max.z < b.min.z || a.min.z > b.max.z) return false;
+    if (a.max.z < b.min.z || a.min.z > b.max.z) return false
 
-    return true;
+    return true
   }
 
   Contains(other: ReadonlyAABB): boolean {
@@ -78,7 +78,7 @@ export default class AABB {
       this.max.x >= other.max.x &&
       this.max.y >= other.max.y &&
       this.max.z >= other.max.z
-    );
+    )
   }
 
   ContainsPoint(point: ReadonlyVec3): boolean {
@@ -89,20 +89,20 @@ export default class AABB {
       this.max.x >= point.x &&
       this.max.y >= point.y &&
       this.max.z >= point.z
-    );
+    )
   }
 
   SurfaceArea(): number {
-    const x = this.max.x - this.min.x;
-    const y = this.max.y - this.min.y;
-    const z = this.max.z - this.min.z;
+    const x = this.max.x - this.min.x
+    const y = this.max.y - this.min.y
+    const z = this.max.z - this.min.z
 
-    return 2 * (x * y + x * z + y * z);
+    return 2 * (x * y + x * z + y * z)
   }
 
   static Combine = (a: ReadonlyAABB, b: ReadonlyAABB): AABB =>
     ({
       min: Vec3.Min(a.min, b.min),
       max: Vec3.Max(a.max, b.max),
-    } as AABB);
+    } as AABB)
 }

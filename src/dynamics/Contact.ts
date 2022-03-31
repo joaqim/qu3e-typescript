@@ -19,83 +19,83 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import type Box from "@collision/Box";
-import type { FixedArray } from "@containers";
-import type Vec3 from "@math/Vec3";
-import type Body from "./Body";
+import type Box from "@collision/Box"
+import type { FixedArray } from "@containers"
+import type {Vec3} from "@math"
+import type Body from "./Body"
 
 export class FeaturePair {
-  inI?: number;
-  inR?: number;
-  outI?: number;
-  outR?: number;
-  key?: number;
+  inI?: number
+  inR?: number
+  outI?: number
+  outR?: number
+  key?: number
 }
 
 export class Contact {
-  position?: Vec3; // World coordinate of contact
-  penetration?: number; // Depth of penetration from collision
-  normalImpulse?: number; // Accumulated normal impulse
-  tangentImpulse?: number; // Accumulated friction impulse
-  bitangentImpulse?: number; // Accumulated friction impulse
-  bias?: number; // Restitution + baumgarte
-  normalMass?: number; // Normal constraint mass
-  tangentMass?: number; // Tangent constraint mass
-  bitangentMass?: number; // Tangent constraint mass
-  fp?: FeaturePair; // Features on A and B for this contact
-  warmStarted?: number; // Used for debug rendering
+  position?: Vec3 // World coordinate of contact
+  penetration?: number // Depth of penetration from collision
+  normalImpulse?: number // Accumulated normal impulse
+  tangentImpulse?: number // Accumulated friction impulse
+  bitangentImpulse?: number // Accumulated friction impulse
+  bias?: number // Restitution + baumgarte
+  normalMass?: number // Normal constraint mass
+  tangentMass?: number // Tangent constraint mass
+  bitangentMass?: number // Tangent constraint mass
+  fp?: FeaturePair // Features on A and B for this contact
+  warmStarted?: number // Used for debug rendering
 }
 
 export class Manifold {
-  A?: Box;
-  B?: Box;
+  A?: Box
+  B?: Box
 
-  normal?: Vec3; // From A to B
-  tangentVectors?: Vec3;
-  bitangentVectors?: Vec3;
+  normal?: Vec3 // From A to B
+  tangentVectors?: Vec3
+  bitangentVectors?: Vec3
 
-  contacts!: FixedArray<8, Contact>;
-  contactCount?: number;
+  contacts!: FixedArray<8, Contact>
+  contactCount?: number
 
-  next?: Manifold;
-  prev?: Manifold;
+  next?: Manifold
+  prev?: Manifold
 
-  sensor?: boolean;
+  sensor?: boolean
 
   constructor() {
     for (let index = 0; index < 8; index++) {
-      this.contacts[index] = new Contact();
+      this.contacts[index] = new Contact()
     }
   }
 
   SetPair(a: Box, b: Box) {
-    this.A = a;
-    this.B = b;
+    this.A = a
+    this.B = b
 
-    this.sensor = a.sensor || b.sensor;
+    this.sensor = a.sensor || b.sensor
   }
 }
 
 export class ContactEdge {
-  other?: Body;
-  constraint?: ContactConstraint;
+  other?: Body
+  constraint?: ContactConstraint
 }
 
 export class ContactConstraint {
-  A?: Box;
-  B?: Box;
+  A?: Box
+  B?: Box
 
-  bodyA: Body | undefined;
-  bodyB: Body | undefined;
+  bodyA: Body | undefined
+  bodyB: Body | undefined
 
-  edgeA: ContactEdge;
-  edgeB: ContactEdge;
+  edgeA: ContactEdge
+  edgeB: ContactEdge
 
-  friction?: number;
-  restitution?: number;
+  friction?: number
+  restitution?: number
 
-  manifold: Manifold;
-  flags?: ContactFlags;
+  manifold: Manifold
+  flags?: ContactFlags
 
   constructor(
     A: Box,
@@ -104,20 +104,20 @@ export class ContactConstraint {
     bodyB: Body,
     flags: ContactFlags,
     friction: number,
-    restitution: number
+    restitution: number,
   ) {
-    this.manifold = new Manifold();
-    this.edgeA = new ContactEdge();
-    this.edgeB = new ContactEdge();
+    this.manifold = new Manifold()
+    this.edgeA = new ContactEdge()
+    this.edgeB = new ContactEdge()
 
-    this.A = A;
-    this.B = B;
-    this.bodyA = bodyA;
-    this.bodyB = bodyB;
+    this.A = A
+    this.B = B
+    this.bodyA = bodyA
+    this.bodyB = bodyB
 
-    this.flags = flags;
-    this.friction = friction;
-    this.restitution = restitution;
+    this.flags = flags
+    this.friction = friction
+    this.restitution = restitution
   }
 }
 

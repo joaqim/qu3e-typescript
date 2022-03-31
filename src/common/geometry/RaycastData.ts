@@ -19,27 +19,34 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import type Vec3 from "@math/Vec3";
+import { Vec3 } from "@math/Vec3"
 
-export default class RaycastData {
+export class RaycastData {
   // TODO: Better defaults
-  start!: Vec3; // Beginning point of the ray
-  dir!: Vec3; // Direction of the ray (normalized)
-  t!: number; // Time specifying ray endpoint
+  start!: Vec3 // Beginning point of the ray
+  dir!: Vec3 // Direction of the ray (normalized)
+  t!: number // Time specifying ray endpoint
 
-  toi!: number; // Solved time of impact
-  normal!: Vec3; // Surface normal at impact
+  toi!: number // Solved time of impact
+  normal!: Vec3 // Surface normal at impact
+
+  // NOTE: Is this constructor used/needed
+  public constructor(startPoint: Vec3, direction: Vec3, endPointTime: number) {
+    this.start = startPoint
+    this.dir = direction
+    this.t = endPointTime
+  }
 
   Set(startPoint: Vec3, direction: Vec3, endPointTime: number) {
-    this.start = startPoint;
-    this.dir = direction;
-    this.t = endPointTime;
+    this.start = startPoint
+    this.dir = direction
+    this.t = endPointTime
   }
 
   // Uses toi, start and dir to compute the point at toi. Should
   // only be called after a raycast has been conducted with a
   // return value of true.
   GetImpactPoint(): Vec3 {
-    return this.start.Add(this.dir.Scale(this.toi));
+    return this.start.Add(Vec3.Scale(this.dir, this.toi))
   }
 }

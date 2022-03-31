@@ -1,6 +1,6 @@
-import type Body from "@dynamics/Body";
-import type BoxDefinition from "./BoxDefinition";
-import Box from "./Box";
+import Box from "@collision/Box"
+import Body from "@dynamics/Body"
+import { BoxDefinition } from "./BoxDefinition"
 
 export function CreateBox(definition: BoxDefinition, body: Body): Box {
   return new Box(
@@ -10,6 +10,6 @@ export function CreateBox(definition: BoxDefinition, body: Body): Box {
     definition.Friction,
     definition.Restitution,
     definition.Density,
-    definition.Sensor
-  );
+    definition.Sensor,
+  )
 }

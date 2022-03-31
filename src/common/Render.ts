@@ -19,16 +19,16 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-export default abstract class Render {
-  abstract SetPenColor: (r: number, g: number, b: number, a?: number) => void;
-  abstract SetPenPosition: (x: number, y: number, z: number) => void;
-  abstract SetScale: (sx: number, sy: number, sz: number) => void;
+export abstract class Render {
+  abstract SetPenColor: (r: number, g: number, b: number, a?: number) => void
+  abstract SetPenPosition: (x: number, y: number, z: number) => void
+  abstract SetScale: (sx: number, sy: number, sz: number) => void
 
   // Render a line from pen position to this point.
   // Sets the pen position to the new point.
-  abstract Line: (x: number, y: number, z: number) => void;
+  abstract Line: (x: number, y: number, z: number) => void
 
-  abstract SetTriNormal: (x: number, y: number, z: number) => void;
+  abstract SetTriNormal: (x: number, y: number, z: number) => void
 
   // Render a triangle with the normal set by SetTriNormal.
   abstract Triangle: (
@@ -40,9 +40,9 @@ export default abstract class Render {
     z2: number,
     x3: number,
     y3: number,
-    z3: number
-  ) => void;
+    z3: number,
+  ) => void
 
   // Draw a point with the scale from SetScale
-  abstract Point: () => void;
+  abstract Point: () => void
 }

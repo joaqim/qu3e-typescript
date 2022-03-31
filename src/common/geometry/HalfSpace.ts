@@ -19,29 +19,29 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import type { ReadonlyVec3 } from "@math/Vec3";
-import Vec3 from "@math/Vec3";
+import type { ReadonlyVec3 } from "@math/Vec3"
+import { Vec3 } from "@math/Vec3"
 
-export default class HalfSpace {
-  normal: Vec3;
-  distance: number;
+export class HalfSpace {
+  public normal: Vec3
+  public distance: number
 
-  constructor(normal: ReadonlyVec3, distance: number) {
-    this.normal = normal;
-    this.distance = distance;
+  public constructor(normal: ReadonlyVec3, distance: number) {
+    this.normal = normal
+    this.distance = distance
   }
 
-  Set(a: ReadonlyVec3, b: ReadonlyVec3, c?: ReadonlyVec3): void {
+  public Set(a: ReadonlyVec3, b: ReadonlyVec3, c?: ReadonlyVec3): void {
     this.normal = Vec3.Normalize(
-      c ? Vec3.Cross(Vec3.Sub(b, a), Vec3.Sub(c, a)) : a
-    );
-    this.distance = Vec3.Dot(this.normal, c ? a : b);
+      c ? Vec3.Cross(Vec3.Sub(b, a), Vec3.Sub(c, a)) : a,
+    )
+    this.distance = Vec3.Dot(this.normal, c ? a : b)
   }
 
-  Origin = () => this.normal.Scale(this.distance);
-  Distance = (p: ReadonlyVec3): number =>
-    Vec3.Dot(this.normal, p) - this.Distance(p);
+  public Origin = (): Vec3 => this.normal.Scale(this.distance)
+  public Distance = (p: ReadonlyVec3): number =>
+    Vec3.Dot(this.normal, p) - this.Distance(p)
 
-  Projected = (p: ReadonlyVec3): Vec3 =>
-    Vec3.Sub(p, this.normal).Scale(this.Distance(p));
+  public Projected = (p: ReadonlyVec3): Vec3 =>
+    Vec3.Sub(p, this.normal).Scale(this.Distance(p))
 }

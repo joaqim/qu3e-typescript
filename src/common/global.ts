@@ -19,31 +19,31 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import type Box from "@collision/Box";
+import type Box from "@collision/Box"
 
 declare global {
-  var Q3_SLEEP_LINEAR: number;
-  var Q3_SLEEP_ANGULAR: number;
-  var Q3_SLEEP_TIME: number;
-  var Q3_BAUMGARTE: number;
-  var Q3_PENETRATION_SLOP: number;
+  var Q3_SLEEP_LINEAR: number
+  var Q3_SLEEP_ANGULAR: number
+  var Q3_SLEEP_TIME: number
+  var Q3_BAUMGARTE: number
+  var Q3_PENETRATION_SLOP: number
 
-  var Assert: (condition: boolean, message?: string) => void;
-  var MixRestitution: (A: Box, B: Box) => number;
-  var MixFriction: (A: Box, B: Box) => number;
+  var Assert: (condition: boolean, message?: string) => void
+  var MixRestitution: (A: Box, B: Box) => number
+  var MixFriction: (A: Box, B: Box) => number
 }
 
-Q3_SLEEP_LINEAR = 0.01;
-Q3_SLEEP_ANGULAR = (2 / 180) * Math.PI;
-Q3_SLEEP_TIME = 0.5;
-Q3_BAUMGARTE = 0.2;
-Q3_PENETRATION_SLOP = 0.05;
+Q3_SLEEP_LINEAR = 0.01
+Q3_SLEEP_ANGULAR = (2 / 180) * Math.PI
+Q3_SLEEP_TIME = 0.5
+Q3_BAUMGARTE = 0.2
+Q3_PENETRATION_SLOP = 0.05
 
 Assert = (condition: boolean, message?: string) => {
-  if (!condition) throw new Error(message);
-};
-MixRestitution = (A: Box, B: Box) => Math.max(A.restitution, B.restitution);
-MixFriction = (A: Box, B: Box) => Math.sqrt(A.friction * B.friction);
+  if (!condition) throw new Error(message)
+}
+MixRestitution = (A: Box, B: Box) => Math.max(A.restitution, B.restitution)
+MixFriction = (A: Box, B: Box) => Math.sqrt(A.friction * B.friction)
 
 /*
 export default class Settings {

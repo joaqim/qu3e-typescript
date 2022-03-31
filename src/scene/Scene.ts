@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 //--------------------------------------------------------------------------------------------------
 /**
     Qu3e Physics Engine - C# Version 1.01
@@ -21,24 +22,20 @@
 */
 //--------------------------------------------------------------------------------------------------
 
-import List from "@collections/List";
-import type Box from "@collision/Box";
-import type { ContactConstraint } from "@dynamics";
-import { BodyFlags } from "@dynamics";
-import type Body from "@dynamics/Body";
-import type { ReadonlyVec3 } from "@math/Vec3";
-import type Vec3 from "@math/Vec3";
-
-class ContactManager {}
-class Island {}
+import List from "@collections/List"
+import type Box from "@collision/Box"
+import type { ContactConstraint } from "@dynamics"
+import type Body from "@dynamics/Body"
+import { ContactManager } from "@dynamics/ContactManager"
+import type { ReadonlyVec3, Vec3 } from "@math"
 
 // This listener is used to gather information about two shapes colliding. This
 // can be used for game logic and sounds. Physics objects created in these
 // Callbacks will not be reported until the following frame. These Callbacks
 // can be called frequently, so make them efficient.
 export abstract class ContactListener {
-  abstract BeginContact: (contact: ContactConstraint) => void;
-  abstract EndContact: (contact: ContactConstraint) => void;
+  abstract BeginContact: (contact: ContactConstraint) => void
+  abstract EndContact: (contact: ContactConstraint) => void
 }
 
 // This class represents general queries for points, AABBs and Raycasting.
@@ -47,40 +44,39 @@ export abstract class ContactListener {
 // By returning only true, all shapes that fulfill the query will be re-
 // ported.
 export abstract class QueryCallback {
-  abstract ReportShape: (box: Box) => boolean;
+  abstract ReportShape: (box: Box) => boolean
 }
 
-export default class Scene {
-  private readonly ContactManager: ContactManager;
+export class Scene {
+  private readonly ContactManager: ContactManager
 
-  private readonly Bodies: List<Body>;
+  private readonly Bodies: List<Body>
 
-  private readonly Gravity: Vec3;
-  private readonly Dt: number;
-  private readonly Iterations: number;
+  private readonly Gravity: Vec3
+  private readonly Dt: number
+  private readonly Iterations: number
 
-  private readonly NewBox: boolean;
-  private readonly AllowSleep: boolean;
-  private readonly EnableFriction: boolean;
+  public NewBox: boolean
+  private readonly AllowSleep: boolean
+  private readonly EnableFriction: boolean
 
-  constructor(dt: number, gravity: ReadonlyVec3, iterations = 20) {
-    this.ContactManager = new ContactManager();
-    this.Island = new Island();
+  public constructor(dt: number, gravity: ReadonlyVec3, iterations = 20) {
+    this.ContactManager = new ContactManager()
+    // this.Island = new Island()
 
-    this.Bodies = new List<Body>();
-    this.Gravity = gravity;
-    this.Dt = dt;
-    this.Iterations = iterations;
-    this.NewBox = false;
-    this.AllowSleep = true;
-    this.EnableFriction = true;
+    this.Bodies = new List<Body>()
+    this.Gravity = gravity
+    this.Dt = dt
+    this.Iterations = iterations
+    this.NewBox = false
+    this.AllowSleep = true
+    this.EnableFriction = true
   }
 
-  Island: Island;
-  // Body[] stack = new Body[256];
-  stack: Body[] = Array.from({ length: 256 });
-
   /*
+  public Island: Island
+  // Body[] stack = new Body[256];
+  private stack: Body[] = Array.from({ length: 256 })
     // Run the simulation forward in time by dt (fixed timestep). Variable
     // timestep is not supported.
     public Step(Dt: number): void {
