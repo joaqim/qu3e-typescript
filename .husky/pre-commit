@@ -2,4 +2,4 @@
 . "$(dirname "$0")/_/husky.sh"
 
 npx enforce-branch-name '(hotfix|bugfix|feature)/.+' --ignore '(staging|develop|dev|main|master)'
-npm test
+#npm test
