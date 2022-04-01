@@ -24,9 +24,12 @@
 
 import List from "@collections/List"
 import type Box from "@collision/Box"
-import type Body from "@dynamics/Body"
+import Body from "@dynamics/Body"
+import { BodyDefinition } from "@dynamics/Body"
+import { BodyFlags } from "@dynamics/Body/Body"
 import type ContactConstraint from "@dynamics/Contact"
 import { ContactManager } from "@dynamics/ContactManager"
+import Island from "@dynamics/Island"
 import type { ReadonlyVec3, Vec3 } from "@math"
 
 // This listener is used to gather information about two shapes colliding. This
@@ -73,12 +76,12 @@ export class Scene {
     this.EnableFriction = true
   }
 
-  /*
-  public Island: Island
+  public Island: Island = new Island()
   // Body[] stack = new Body[256];
-  private stack: Body[] = Array.from({ length: 256 })
-    // Run the simulation forward in time by dt (fixed timestep). Variable
-    // timestep is not supported.
+  public stack: Body[] = Array.from({ length: 256 })
+
+  // Run the simulation forward in time by dt (fixed timestep). Variable
+  // timestep is not supported.
     public Step(Dt: number): void {
         if (this.NewBox) {
             this.ContactManager.Broadphase.UpdatePairs();
@@ -87,18 +90,19 @@ export class Scene {
 
         this.ContactManager.TestCollisions();
 
-        for (var body in this.Bodies)
-            body.Flags &= ~BodyFlags.eIsland;
+        this.Bodies.ForEach((body: Body) => {
+            body.Flags &= ~BodyFlags.Island;
+    })
 
-        this.Island.AllowSleep = AllowSleep;
-        this.Island.EnableFriction = EnableFriction;
-        this.Island.Dt = Dt;
-        this.Island.Gravity = Gravity;
-        this.Island.Iterations = Iterations;
+        this.Island.allowSleep = this.AllowSleep;
+        this.Island.enableFriction = this.EnableFriction;
+        this.Island.dt = this.Dt;
+        this.Island.gravity = this.Gravity;
+        this.Island.iterations = this.Iterations;
 
         // Build each active Island and then solve each built Island
         //            int stackSize = Bodies.Count;
-        foreach(var seed in Bodies)
+        this.Bodies.ForEach((seed: Body) =>
         {
             // Seed cannot be apart of an Island already
             if ((seed.Flags & BodyFlags.Island) > 0)
@@ -183,7 +187,7 @@ export class Scene {
                 if ((body.Flags & BodyFlags.eStatic) > 0)
                     body.Flags &= ~BodyFlags.eIsland;
             }
-        }
+        }}
 
         // Update the broadphase AABBs
         foreach(var body in Bodies)
@@ -207,16 +211,15 @@ export class Scene {
 
     // Construct a new rigid body. The BodyDef can be reused at the user's
     // discretion, as no reference to the BodyDef is kept.
-    public Body CreateBody(BodyDef def) {
-            Body body = new Body(def, this);
+    public CreateBody(def: Readonly<BodyDefinition>): Body {
+        const body = new Body(def, this);
 
         // Add body to scene Bodies
-
-
-        Bodies.Add(body);
+        this.Bodies.Add(body);
 
         return body;
     }
+  /*
 
     // Frees a body, removes all shapes associated with the body and frees
     // all shapes and contacts associated and attached to this body.

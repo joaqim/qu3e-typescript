@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prevent-abbreviations */
 /**
  *     Qu3e Physics Engine - Typescript Version 1.0
  *
@@ -25,6 +26,7 @@ import { Vec3 } from "./Vec3"
 
 export type Mat3Index = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 export type Mat3Axis = 0 | 1 | 2
+// eslint-disable-next-line no-use-before-define
 export type ReadonlyMat3 = Readonly<Mat3>
 
 type Mat3Keys = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i"
@@ -34,7 +36,7 @@ type Matrix3 = {
 }
 
 export class Mat3 {
-  values!: {
+  public values!: {
     a: number
     b: number
     c: number
@@ -46,7 +48,9 @@ export class Mat3 {
     i: number
   }
 
-  constructor(payload?: Matrix3 | [a: Vec3, b: Vec3, c: Vec3] | FixedArray<9>) {
+  public constructor(
+    payload?: Matrix3 | [a: Vec3, b: Vec3, c: Vec3] | FixedArray<9>,
+  ) {
     if (Array.isArray(payload)) {
       this.SetRowsFromArray(payload)
     } else {
@@ -54,27 +58,38 @@ export class Mat3 {
     }
   }
 
-  SetCell(key: Mat3Keys | number, value: number): Mat3 {
+  public SetCell(key: Mat3Keys | number, value: number): Mat3 {
     if (Number.isInteger(key)) {
       switch (key) {
         case 0:
           this.values.a = value
+          break
         case 1:
           this.values.b = value
+          break
         case 2:
           this.values.c = value
+          break
         case 3:
           this.values.d = value
+          break
         case 4:
           this.values.e = value
+          break
         case 5:
           this.values.f = value
+          break
         case 6:
           this.values.g = value
+          break
         case 7:
           this.values.h = value
+          break
         case 8:
           this.values.i = value
+          break
+        default:
+          Assert(false)
       }
     } else {
       this.values[<Mat3Keys>key] = value
@@ -82,7 +97,7 @@ export class Mat3 {
     return this
   }
 
-  SetCells(
+  public SetCells(
     a: number,
     b: number,
     c: number,
@@ -107,7 +122,7 @@ export class Mat3 {
     return this
   }
 
-  Set(axis: ReadonlyVec3, angle: number): Mat3 {
+  public Set(axis: ReadonlyVec3, angle: number): Mat3 {
     const s = Math.sin(angle)
     const c = Math.cos(angle)
     const x = axis.x
@@ -132,10 +147,10 @@ export class Mat3 {
     return this
   }
 
-  SetRowsFromArray(
+  public SetRowsFromArray(
     array: [a: ReadonlyVec3, b: ReadonlyVec3, c: ReadonlyVec3] | FixedArray<9>,
   ): Mat3 {
-    if (array.length == 3) {
+    if (array.length === 3) {
       this.SetRows(...array)
     } else {
       this.SetCells(...array)
@@ -143,36 +158,38 @@ export class Mat3 {
     return this
   }
 
-  SetRows(v1: ReadonlyVec3, v2: ReadonlyVec3, v3: ReadonlyVec3): Mat3 {
+  public SetRows(v1: ReadonlyVec3, v2: ReadonlyVec3, v3: ReadonlyVec3): Mat3 {
     this.SetCells(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z, v3.x, v3.y, v3.z)
     return this
   }
 
-  SetRow(axis: Mat3Axis | number, value: Vec3) {
+  public SetRow(axis: Mat3Axis | number, value: Vec3): void {
     switch (axis) {
       case 0:
         this.ex = value
+        break
       case 1:
         this.ey = value
+        break
       case 2:
         this.ez = value
+        break
+      default:
+        Assert(false)
     }
   }
 
-  Column0 = () => new Vec3(this.values.a, this.values.b, this.values.c)
-  Column1 = () => new Vec3(this.values.d, this.values.e, this.values.f)
-  Column2 = () => new Vec3(this.values.g, this.values.h, this.values.i)
+  public Column0 = (): Vec3 =>
+    new Vec3(this.values.a, this.values.b, this.values.c)
+
+  public Column1 = (): Vec3 =>
+    new Vec3(this.values.d, this.values.e, this.values.f)
+
+  public Column2 = (): Vec3 =>
+    new Vec3(this.values.g, this.values.h, this.values.i)
 
   public get ex(): Vec3 {
     return this.Column0()
-  }
-
-  public get ey(): Vec3 {
-    return this.Column1()
-  }
-
-  public get ez(): Vec3 {
-    return this.Column2()
   }
 
   public set ex(v: Vec3) {
@@ -181,10 +198,18 @@ export class Mat3 {
     this.values.c = v.z
   }
 
+  public get ey(): Vec3 {
+    return this.Column1()
+  }
+
   public set ey(v: Vec3) {
     this.values.d = v.x
     this.values.e = v.y
     this.values.f = v.z
+  }
+
+  public get ez(): Vec3 {
+    return this.Column2()
   }
 
   public set ez(v: Vec3) {
@@ -193,7 +218,7 @@ export class Mat3 {
     this.values.i = v.z
   }
 
-  static MultiplyByVec3(m: ReadonlyMat3, v: ReadonlyVec3): Vec3 {
+  public static MultiplyByVec3(m: ReadonlyMat3, v: ReadonlyVec3): Vec3 {
     return new Vec3(
       m.values.a * v.x + m.values.b * v.y + m.values.c * v.z,
       m.values.d * v.x + m.values.e * v.y + m.values.f * v.z,
@@ -201,28 +226,28 @@ export class Mat3 {
     )
   }
 
-  static Scale(lhs: Mat3, n: number): Mat3 {
+  public static Scale(lhs: Mat3, n: number): Mat3 {
     lhs.ex = Vec3.MultiplyByNumber(lhs.ex, n)
     lhs.ey = Vec3.MultiplyByNumber(lhs.ey, n)
     lhs.ez = Vec3.MultiplyByNumber(lhs.ez, n)
     return lhs
   }
 
-  Multiply(m: ReadonlyMat3): Mat3 {
+  public Multiply(m: ReadonlyMat3): Mat3 {
     this.ex = Mat3.MultiplyByVec3(this, m.ex)
     this.ey = Mat3.MultiplyByVec3(this, m.ey)
     this.ez = Mat3.MultiplyByVec3(this, m.ez)
     return this
   }
 
-  MultiplyByNumber(n: number): Mat3 {
+  public MultiplyByNumber(n: number): Mat3 {
     this.ex = Vec3.MultiplyByNumber(this.ex, n)
     this.ey = Vec3.MultiplyByNumber(this.ey, n)
     this.ez = Vec3.MultiplyByNumber(this.ez, n)
     return this
   }
 
-  Scale(n: number): Mat3 {
+  public Scale(n: number): Mat3 {
     this.ex = Vec3.MultiplyByNumber(this.ex, n)
     this.ey = Vec3.MultiplyByNumber(this.ey, n)
     this.ez = Vec3.MultiplyByNumber(this.ez, n)
@@ -230,28 +255,28 @@ export class Mat3 {
   }
 
   // TODO: Make sure this is correct
-  MultiplyByVec3(v: ReadonlyVec3): Mat3 {
+  public MultiplyByVec3(v: ReadonlyVec3): Mat3 {
     this.ex = Vec3.MultiplyByNumber(this.ex, v.x)
     this.ey = Vec3.MultiplyByNumber(this.ey, v.y)
     this.ez = Vec3.MultiplyByNumber(this.ez, v.z)
     return this
   }
 
-  Add(rhs: ReadonlyMat3): Mat3 {
+  public Add(rhs: ReadonlyMat3): Mat3 {
     this.ex = Vec3.Add(this.ex, rhs.ex)
     this.ey = Vec3.Add(this.ey, rhs.ey)
     this.ez = Vec3.Add(this.ez, rhs.ez)
     return this
   }
 
-  Sub(rhs: ReadonlyMat3): Mat3 {
+  public Sub(rhs: ReadonlyMat3): Mat3 {
     this.ex = Vec3.Sub(this.ex, rhs.ex)
     this.ey = Vec3.Sub(this.ey, rhs.ey)
     this.ez = Vec3.Sub(this.ez, rhs.ez)
     return this
   }
 
-  GetAxis(axis: Mat3Axis | number): Vec3 {
+  public GetAxis(axis: Mat3Axis | number): Vec3 {
     switch (<Mat3Axis>axis) {
       case 0:
         return this.ex
@@ -259,10 +284,13 @@ export class Mat3 {
         return this.ey
       case 2:
         return this.ez
+      default:
+        Assert(false)
     }
+    return Vec3.Identity()
   }
 
-  Get(index: Mat3Index): number {
+  public Get(index: Mat3Index): number {
     switch (index) {
       case 0:
         return this.values.a
@@ -282,10 +310,13 @@ export class Mat3 {
         return this.values.h
       case 8:
         return this.values.i
+      default:
+        Assert(false)
     }
+    return -1
   }
 
-  GetCellByKey(key: Mat3Keys): number {
+  public GetCellByKey(key: Mat3Keys): number {
     return this.values[key]
   }
 
@@ -296,19 +327,30 @@ export class Mat3 {
     return this.GetAxis(<Vec3Axis>axis).Get(<Vec3Axis>vecAxis)
   }
 
-  public static Identity = () => new Mat3([1, 0, 0, 0, 1, 0, 0, 0, 1])
+  public static Identity = (): Mat3 => new Mat3([1, 0, 0, 0, 1, 0, 0, 0, 1])
 
-  public static Rotate = (x: ReadonlyVec3, y: ReadonlyVec3, z: ReadonlyVec3) =>
-    new Mat3([x, y, z])
+  public static Rotate = (
+    x: ReadonlyVec3,
+    y: ReadonlyVec3,
+    z: ReadonlyVec3,
+  ): Mat3 => new Mat3([x, y, z])
 
-  public static Sub = (lhs: ReadonlyMat3, rhs: ReadonlyMat3) =>
+  public static Sub = (lhs: ReadonlyMat3, rhs: ReadonlyMat3): Mat3 =>
     new Mat3([
       Vec3.Sub(lhs.ex, rhs.ex),
       Vec3.Sub(lhs.ey, rhs.ey),
       Vec3.Sub(lhs.ez, rhs.ez),
     ])
 
-  public static Transpose = (m: ReadonlyMat3) =>
+  public static Multiply(lhs: ReadonlyMat3, rhs: ReadonlyMat3): Mat3 {
+    return new Mat3([
+      Mat3.MultiplyByVec3(lhs, rhs.ex),
+      Mat3.MultiplyByVec3(lhs, rhs.ey),
+      Mat3.MultiplyByVec3(lhs, rhs.ez),
+    ])
+  }
+
+  public static Transpose = (m: ReadonlyMat3): Mat3 =>
     new Mat3([
       m.values.a,
       m.values.d,
@@ -346,21 +388,20 @@ export class Mat3 {
 
     const c = new Vec3(0, 0, 0)
 
-    for (var index = 0; index < numberPoints; ++index) {
+    for (let index = 0; index < numberPoints; index += 1) {
       c.Add(points[index])
     }
 
     c.DivideByNumber(numberPoints)
 
-    let m00
-    let m11
-    let m22
-    let m01
-    let m02
-    let m12
-    m00 = m11 = m22 = m01 = m02 = m12 = 0
+    let m00 = 0
+    let m11 = 0
+    let m22 = 0
+    let m01 = 0
+    let m02 = 0
+    let m12 = 0
 
-    for (var index = 0; index < numberPoints; ++index) {
+    for (let index = 0; index < numberPoints; index += 1) {
       const p = points[index].Sub(c)
 
       m00 += p.x * p.x

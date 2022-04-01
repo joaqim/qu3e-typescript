@@ -23,17 +23,18 @@ import type FeaturePair from "@dynamics/FeaturePair"
 import type { Vec3 } from "@math"
 
 export default class Contact {
-  public position?: Vec3 // World coordinate of contact
-  public penetration?: number // Depth of penetration from collision
-  public normalImpulse?: number // Accumulated normal impulse
-  public tangentImpulse?: number // Accumulated friction impulse
-  public bitangentImpulse?: number // Accumulated friction impulse
-  public bias?: number // Restitution + baumgarte
-  public normalMass?: number // Normal constraint mass
-  public tangentMass?: number // Tangent constraint mass
-  public bitangentMass?: number // Tangent constraint mass
-  public fp?: FeaturePair // Features on A and B for this contact
-  public warmStarted?: number // Used for debug rendering
+  // TODO: Better defaults
+  public position!: Vec3 // World coordinate of contact
+  public penetration!: number // Depth of penetration from collision
+  public normalImpulse!: number // Accumulated normal impulse
+  public tangentImpulse!: number // Accumulated friction impulse
+  public bitangentImpulse!: number // Accumulated friction impulse
+  public bias!: number // Restitution + baumgarte
+  public normalMass!: number // Normal constraint mass
+  public tangentMass!: number // Tangent constraint mass
+  public bitangentMass!: number // Tangent constraint mass
+  public fp!: FeaturePair // Features on A and B for this contact
+  public warmStarted!: number // Used for debug rendering
 }
 
 // eslint-disable-next-line no-shadow

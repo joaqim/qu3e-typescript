@@ -4,15 +4,16 @@ import type { Vec3 } from "@math"
 import Contact from "./Contact"
 
 export default class Manifold {
-  public A?: Box
-  public B?: Box
+  // TODO: Better defults
+  public A!: Box
+  public B!: Box
 
-  public normal?: Vec3 // From A to B
-  public tangentVectors?: Vec3
-  public bitangentVectors?: Vec3
+  public normal!: Vec3 // From A to B
+  public tangentVectors!: Vec3
+  public bitangentVectors!: Vec3
 
   public contacts!: FixedArray<8, Contact>
-  public contactCount?: number
+  public contactCount = 0
 
   public next?: Manifold
   public prev?: Manifold

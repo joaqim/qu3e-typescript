@@ -64,7 +64,7 @@ export default class Body {
 
     this.CalculateMassData()
 
-    this.Scene.ContactManager.BroadPhase.InsertBox(box, aabb)
+    this.Scene.ContactManager.Broadphase.InsertBox(box, aabb)
     this.Scene.NewBox = true
 
     return box
@@ -92,7 +92,7 @@ export default class Body {
         this.Scene.ContactManager.RemoveContact(contact)
     })
 
-    this.Scene.ContactManager.BroadPhase.RemoveBox(box)
+    this.Scene.ContactManager.Broadphase.RemoveBox(box)
 
     this.CalculateMassData()
     // Scene.Heap.Free((void)box);
@@ -101,7 +101,7 @@ export default class Body {
   // Removes all boxes from this body and the broadphase.
   public RemoveAllBoxes(): void {
     this.Boxes.ForEach((box: Box) =>
-      this.Scene.ContactManager.BroadPhase.RemoveBox(box),
+      this.Scene.ContactManager.Broadphase.RemoveBox(box),
     )
 
     this.Scene.ContactManager.RemoveContactsFromBody(this)
@@ -322,36 +322,36 @@ export default class Body {
   }
 
   // TODO: Better defaults
-  private InvInertiaModel!: Mat3
-  private InvInertiaWorld!: Mat3
-  private Mass!: number
-  private InvMass!: number
+  public InvInertiaModel!: Mat3
+  public InvInertiaWorld!: Mat3
+  public Mass!: number
+  public InvMass!: number
 
-  private LinearVelocity: Vec3
-  private AngularVelocity: Vec3
-  private readonly Force: Vec3
-  private readonly Torque: Vec3
-  private Tx: Transform
-  private readonly Q: Quaternion
+  public LinearVelocity: Vec3
+  public AngularVelocity: Vec3
+  public Force: Vec3
+  public Torque: Vec3
+  public Tx: Transform
+  public Q: Quaternion
 
   // TODO: Better defaults
-  private LocalCenter!: Vec3
-  private WorldCenter!: Vec3
+  public LocalCenter!: Vec3
+  public WorldCenter!: Vec3
 
-  private SleepTime: number
-  private GravityScale: number
-  private Layers: number
-  private Flags: BodyFlags
+  public SleepTime: number
+  public GravityScale: number
+  public Layers: number
+  public Flags: BodyFlags
 
-  private readonly Boxes: List<Box>
-  private readonly UserData: unknown
+  public Boxes: List<Box>
+  public UserData: unknown
   public Scene: Scene
   // private Body Next;
   // private Body Prev;
-  private readonly IslandIndex?: number
+  public IslandIndex?: number
 
-  private LinearDamping: number
-  private AngularDamping: number
+  public LinearDamping: number
+  public AngularDamping: number
 
   public ContactList: List<ContactEdge>
 
@@ -417,7 +417,7 @@ export default class Body {
   }
 
   private SynchronizeProxies(): void {
-    const broadphase = this.Scene.ContactManager.BroadPhase
+    const broadphase = this.Scene.ContactManager.Broadphase
 
     this.Tx.position = Vec3.Sub(
       this.WorldCenter,

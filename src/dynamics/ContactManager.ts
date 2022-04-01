@@ -22,17 +22,21 @@
 import BroadPhase from "@broadphase"
 import List from "@collections/List"
 import type Box from "@collision/Box"
+import { AABB } from "@common"
+import { Vec3 } from "@math"
 import type { ContactListener } from "@scene/Scene"
+import type Body from "./Body"
+import { ContactFlags } from "./Contact/Contact"
 import ContactConstraint from "./Contact/ContactConstraint"
 import type ContactEdge from "./Contact/ContactEdge"
 
 export class ContactManager {
-  public BroadPhase: BroadPhase
+  public Broadphase: BroadPhase
   public ContactList: List<ContactConstraint>
   public ContactListener: ContactListener | null = null
 
   public constructor() {
-    this.BroadPhase = new BroadPhase(this)
+    this.Broadphase = new BroadPhase(this)
     this.ContactList = new List<ContactConstraint>()
   }
 
@@ -67,8 +71,8 @@ export class ContactManager {
       a.body,
       b.body,
       0,
-      this.MixFriction(a, b),
-      this.MixRestitution(a, b),
+      MixFriction(a, b),
+      MixRestitution(a, b),
     )
 
     contact.manifold.SetPair(a, b)
@@ -87,5 +91,130 @@ export class ContactManager {
 
     bodyA.SetToAwake()
     bodyB.SetToAwake()
+  }
+
+  // Has broadphase find all contacts and call AddContact on the
+  // ContactManager for each pair found
+  public FindNewContacts(): void {
+    this.Broadphase.UpdatePairs()
+  }
+
+  // Remove a specific contact
+  public RemoveContact(contact: ContactConstraint): void {
+    const a = contact.bodyA
+    const b = contact.bodyB
+
+    // Remove from a
+    a?.ContactList.Remove(contact.edgeA)
+    // Remove from b
+    b?.ContactList.Remove(contact.edgeB)
+
+    a?.SetToAwake()
+    b?.SetToAwake()
+
+    // Remove contact from the manager
+    this.ContactList.Remove(contact)
+  }
+
+  // Remove all contacts from a body
+  public RemoveContactsFromBody(body: Body): void {
+    body.ContactList.ForEach((edge: ContactEdge) => {
+      // TODO: Can constraint be null here?
+      if (edge.constraint) this.RemoveContact(edge.constraint)
+    })
+  }
+
+  public RemoveFromBroadphase(body: Body): void {
+    body.Boxes.ForEach((box: Box) => {
+      this.Broadphase.RemoveBox(box)
+    })
+  }
+
+  public TestCollisions(): void {
+    for (let h = 0; h < this.ContactList.Count(); h += 1) {
+      const constraint = this.ContactList.GetAt(h)
+      const A = constraint?.A
+      const B = constraint?.B
+      const bodyA = A.body
+      const bodyB = B.body
+
+      constraint.flags &= ~ContactFlags.Island
+
+      if (bodyA.IsAwake() && bodyB.IsAwake()) {
+        if (bodyA.CanCollide(bodyB)) {
+          this.RemoveContact(constraint)
+        } else {
+          // Check if contact should persist
+          // eslint-disable-next-line no-lonely-if
+          if (
+            !this.Broadphase.TestOverlap(A.broadPhaseIndex, B.broadPhaseIndex)
+          ) {
+            this.RemoveContact(constraint)
+          } else {
+            const manifold = constraint.manifold
+            const oldManifold = constraint.manifold
+            const ot0 = oldManifold.tangentVectors
+            const ot1 = oldManifold.bitangentVectors
+            constraint.SolveCollision()
+            // AABB.ComputeBasis(manifold.normal, ref manifold.tangentVectors, ref manifold.bitangentVectors);
+            // TODO: Better assign by reference
+            const { b: tangentVectors, c: bitangentVectors } =
+              AABB.ComputeBasis(
+                manifold.normal,
+                manifold.tangentVectors,
+                manifold.bitangentVectors,
+              )
+            manifold.tangentVectors = tangentVectors
+            manifold.bitangentVectors = bitangentVectors
+
+            for (let index = 0; index < manifold.contactCount; index += 1) {
+              const c = manifold.contacts[index]
+              c.tangentImpulse = 0
+              c.bitangentImpulse = 0
+              c.normalImpulse = 0
+              const oldWarmStart = c.warmStarted
+              c.warmStarted = 0
+
+              for (
+                let index2 = 0;
+                index2 < oldManifold.contactCount;
+                index2 += 1
+              ) {
+                const oc = oldManifold.contacts[index2]
+
+                if (c.fp?.key === oc.fp?.key) {
+                  c.normalImpulse = oc.normalImpulse
+
+                  // Attempt to re-project old friction solutions
+                  const friction = Vec3.Scale(ot0, oc.tangentImpulse).Add(
+                    Vec3.Scale(ot1, oc.bitangentImpulse),
+                  )
+                  c.tangentImpulse = Vec3.Dot(friction, manifold.tangentVectors)
+                  c.bitangentImpulse = Vec3.Dot(
+                    friction,
+                    manifold.bitangentVectors,
+                  )
+                  // c.warmStarted = Math.max(oldWarmStart, byte(oldWarmStart + 1))
+                  c.warmStarted = Math.max(oldWarmStart, oldWarmStart + 1)
+                  break
+                }
+              }
+            }
+            // TODO:
+            /*
+      if (this.ContactListener != null) {
+        const nowColliding = constraint.flags & ContactFlags.Colliding
+        const wasColliding = constraint.flags & ContactFlags.WasColliding
+
+        if (nowColliding > 0 && wasColliding === 0)
+          this.ContactListener.BeginContact(constraint)
+        else if (nowColliding === 0 && wasColliding > 0)
+          this.ContactListener.EndContact(constraint)
+      }
+      */
+          }
+        }
+      }
+    }
   }
 }

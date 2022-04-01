@@ -5,20 +5,20 @@ import ContactEdge from "./ContactEdge"
 import type { ContactFlags } from "./Contact"
 
 export default class ContactConstraint {
-  public A?: Box
-  public B?: Box
+  public A: Box
+  public B: Box
 
-  public bodyA: Body | undefined
-  public bodyB: Body | undefined
+  public bodyA: Body
+  public bodyB: Body
 
   public edgeA: ContactEdge
   public edgeB: ContactEdge
 
-  public friction?: number
-  public restitution?: number
+  public friction: number
+  public restitution: number
 
   public manifold: Manifold
-  public flags?: ContactFlags
+  public flags: ContactFlags
 
   public constructor(
     A: Box,

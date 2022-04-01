@@ -12,7 +12,7 @@ export default class List<T> implements IIterable<T> {
     this.values.push(value)
   }
 
-  public GetAt(index: number): T | undefined {
+  public GetAt(index: number): T {
     return this.values[index]
   }
 

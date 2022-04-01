@@ -22,19 +22,19 @@ export class BoxDefinition {
     this.E = extents.MultiplyByNumber(0.5)
   }
 
-  public set SetFriction(friction: number) {
+  public SetFriction(friction: number): void {
     this.Friction = friction
   }
 
-  public set SetRestitution(restitution: number) {
+  public SetRestitution(restitution: number): void {
     this.Restitution = restitution
   }
 
-  public set SetDensity(density: number) {
+  public SetDensity(density: number): void {
     this.Density = density
   }
 
-  public set SetSensor(sensor: boolean) {
+  public SetSensor(sensor: boolean): void {
     this.Sensor = sensor
   }
 }

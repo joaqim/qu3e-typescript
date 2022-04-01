@@ -19,40 +19,36 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import {Mat3} from "./Mat3"
-import {Vec3} from "./Vec3"
 import "@common/global"
+import { Mat3 } from "./Mat3"
+import { Vec3 } from "./Vec3"
 
 export class Quaternion {
-  x!: number
-  y!: number
-  z!: number
-  w!: number
+  public x!: number
+  public y!: number
+  public z!: number
+  public w!: number
 
-  constructor(
+  public constructor(
     payload:
       | [x: number, y: number, z: number, w: number]
       | [axis: Vec3, radians: number],
   ) {
-    if (payload.length == 4) {
+    if (payload.length === 4) {
       this.SetRow(...payload)
     } else {
-      this.x = 0
-      this.y = 0
-      this.z = 0
-      this.w = 0
       this.Set(...payload)
     }
   }
 
-  SetRow(x: number, y: number, z: number, w: number) {
+  public SetRow(x: number, y: number, z: number, w: number): void {
     this.x = x
     this.y = y
     this.z = z
     this.w = w
   }
 
-  Set(axis: Vec3, radians: number) {
+  public Set(axis: Vec3, radians: number): void {
     const halfAngle = radians * 0.5
     const s = Math.sin(halfAngle)
     this.x = s * axis.x
@@ -61,20 +57,20 @@ export class Quaternion {
     this.w = Math.cos(halfAngle)
   }
 
-  Assign(q: Quaternion) {
+  public Assign(q: Quaternion): void {
     this.x = q.x
     this.y = q.y
     this.z = q.z
     this.w = q.w
   }
 
-  ToAxisAngle(axis: Vec3, angle: number): { axis: Vec3; angle: number } {
+  public ToAxisAngle(axis: Vec3, angle: number): { axis: Vec3; angle: number } {
     Assert(this.w <= 1)
     angle = 2 * Math.acos(this.w)
 
     let l = Math.sqrt(1 - this.w * this.w)
 
-    if (l == 0) {
+    if (l === 0) {
       axis = new Vec3(0, 0, 0)
     } else {
       l = 1 / l
@@ -84,7 +80,7 @@ export class Quaternion {
     return { axis, angle }
   }
 
-  Integrate(dv: Vec3, dt: number): void {
+  public Integrate(dv: Vec3, dt: number): void {
     const q = new Quaternion([dv.x * dt, dv.y * dt, dv.z * dt, 0])
 
     q.Multiply(this)
@@ -160,7 +156,7 @@ export class Quaternion {
 
     let d = q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z
 
-    if (d == 0) w = 1
+    if (d === 0) w = 1
 
     d = 1 / Math.sqrt(d)
 
