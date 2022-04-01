@@ -95,6 +95,14 @@ export class Vec3 {
     return this.SetRow(...array)
   }
 
+  /**
+   * If argument is provided, copies current x, y & z to destination
+   * else return a new Vec3 with current x, y & z
+   *
+   * @param  {Vec3} destination?
+   * @returns Vec3
+   */
+
   public Copy = (destination?: Vec3): Vec3 => {
     if (!destination) return new Vec3(this.x, this.y, this.z)
     destination.x = this.x
@@ -102,9 +110,21 @@ export class Vec3 {
     destination.z = this.z
     return destination
   }
+  /**
+   * Check if this equals provided Vec3
+   *
+   * @param  {ReadonlyVec3} rhs
+   * @returns boolean
+   */
 
   public Equals = (rhs: ReadonlyVec3): boolean =>
     this.x === rhs.x && this.y === rhs.y && this.z === rhs.z
+  /**
+   * Subtracts Vec3 from current Vec3
+   *
+   * @param  {ReadonlyVec3} rhs
+   * @returns this
+   */
 
   public Sub(rhs: ReadonlyVec3): Vec3 {
     this.x -= rhs.x
