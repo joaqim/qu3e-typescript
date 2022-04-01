@@ -4,6 +4,11 @@ module.exports = {
   plugins: ["@typescript-eslint", "prettier"],
   extends: ["@programic/eslint-config-typescript", "prettier"],
   rules: {
+    "max-classes-per-file": "warn",
+    "padding-line-between-statements": "warn",
+    "spaced-comment": "warn",
+    "lines-between-class-members": "warn",
+    "class-methods-use-this": "warn",
     "no-bitwise": "off",
     "no-param-reassign": "off",
     "id-length": "off",
