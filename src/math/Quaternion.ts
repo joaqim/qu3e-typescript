@@ -80,6 +80,11 @@ export class Quaternion {
     return { axis, angle }
   }
 
+  /**
+   * @param  {Vec3} dv
+   * @param  {number} dt
+   * @returns void
+   */
   public Integrate(dv: Vec3, dt: number): void {
     const q = new Quaternion([dv.x * dt, dv.y * dt, dv.z * dt, 0])
 
@@ -94,7 +99,8 @@ export class Quaternion {
   }
 
   /**
-   * Multiply
+   * @param  {Readonly<Quaternion>} rhs
+   * @returns Quaternion
    */
   public Multiply(rhs: Readonly<Quaternion>): Quaternion {
     this.SetRow(
@@ -107,7 +113,10 @@ export class Quaternion {
   }
 
   /**
-   * Multiply
+   * Multiplies two Readonly Quaternions by eachother and returns result
+   * @param  {Readonly<Quaternion>} lhs
+   * @param  {Readonly<Quaternion>} rhs
+   * @returns Resulting Quaternion after multiplication
    */
   public static Multiply(
     lhs: Readonly<Quaternion>,
@@ -122,7 +131,8 @@ export class Quaternion {
   }
 
   /**
-   * ToMat3
+   * Converts Quaternion to Mat3 (3x3 Matrix)
+   * @returns Mat3
    */
   public ToMat3(): Mat3 {
     const qx2 = this.x + this.x
@@ -147,6 +157,9 @@ export class Quaternion {
 
   /**
    * Normalize
+   *
+   * @param  {Quaternion} q
+   * @returns Normalized Quaternion
    */
   public static Normalize(q: Quaternion): Quaternion {
     let x = q.x
