@@ -1,5 +1,5 @@
 {
-    "licenser.customHeaderFile": "${workspaceFolder}/LICENSE.txt",
+    "licenser.customHeaderFile": "${workspaceFolder}/licenses/LICENSE-Qu3e.txt",
     "licenser.license": "Custom",
     "licenser.useSingleLineStyle": false,
     "licenser.disableAutoHeaderInsertion": true,
