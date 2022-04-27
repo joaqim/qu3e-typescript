@@ -19,6 +19,8 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
+import type { ReadonlyMat3 } from "@math"
+
 export type Vec3Axis = 0 | 1 | 2
 // eslint-disable-next-line no-use-before-define
 export type ReadonlyVec3 = Readonly<Vec3>
@@ -111,7 +113,7 @@ export class Vec3 {
     return destination
   }
   /**
-   * Check if this equals provided Vec3
+   * Returns true if this x, y, z equals provided Vector
    *
    * @param  {ReadonlyVec3} rhs
    * @returns boolean
@@ -119,8 +121,9 @@ export class Vec3 {
 
   public Equals = (rhs: ReadonlyVec3): boolean =>
     this.x === rhs.x && this.y === rhs.y && this.z === rhs.z
+
   /**
-   * Subtracts Vec3 from current Vec3
+   * Subtracts x, y, z by same values from provided vector
    *
    * @param  {ReadonlyVec3} rhs
    * @returns this
@@ -252,6 +255,15 @@ export class Vec3 {
       b.x * a.z - a.x * b.z,
       a.x * b.y - b.x * a.y,
     )
+
+  // TODO: This is propably incorrect. See https://numpy.org/devdocs/user/basics.broadcasting.html
+  public static AddMat3(lhs: ReadonlyVec3, rhs: ReadonlyMat3): ReadonlyVec3 {
+    return new Vec3(
+      lhs.x + rhs.Column0().x,
+      lhs.y + rhs.Column1().y,
+      lhs.z + rhs.Column2().z,
+    )
+  }
 
   /**
    * Length

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
 import type { ReadonlyVec3 } from "@math"
 import { Mat3, Quaternion, Vec3 } from "@math"
@@ -5,14 +6,14 @@ import type Body from "./Body"
 import { BodyFlags } from "./Body/Body"
 import type ContactConstraint from "./Contact/ContactConstraint"
 import type ContactSolver from "./Contact/ContactSolver"
-import type { ContactConstraintState } from "./Contact/ContactSolver"
+import { ContactConstraintState, ContactState } from "./Contact/ContactSolver"
 
 export class VelocityState {
   public linearVelocity: Vec3
   public angularVelocity: Vec3
   public constructor(
-    linearVelocity: ReadonlyVec3,
-    angularVelocity: ReadonlyVec3,
+    linearVelocity: ReadonlyVec3 = Vec3.Zero(),
+    angularVelocity: ReadonlyVec3 = Vec3.Zero(),
   ) {
     this.linearVelocity = linearVelocity
     this.angularVelocity = angularVelocity
@@ -95,7 +96,7 @@ export default class Island {
     for (let index = 0; index < this.iterations; index += 1)
       this.contactSolver.Solve()
 
-    this.contactSolver.ShutDown()
+    this.contactSolver.Shutdown()
 
     // Copy back state buffers
     // Integrate positions
@@ -157,6 +158,54 @@ export default class Island {
     }
   }
 
+  public Add(body: Body): void {
+    body.IslandIndex = this.bodies.length
+    this.bodies.push(body)
+    this.velocities.push(new VelocityState())
+  }
+
+  public AddContact(contact: ContactConstraint): void {
+    this.contacts.push(contact)
+    this.contactStates.push(ContactConstraintState.Allocate())
+  }
+
+  public Initialize(): void {
+    for (let index = 0; index < this.contacts.length; index += 1) {
+      const cc = this.contacts[index]
+
+      const c = this.contactStates[index]
+
+      // TODO: don't use non-null assertion
+      c.centerA = cc.bodyA!.WorldCenter
+      c.centerB = cc.bodyB!.WorldCenter
+      c.iA = cc.bodyA!.InvInertiaWorld
+      c.iB = cc.bodyB!.InvInertiaWorld
+      c.mA = cc.bodyA!.InvMass
+      c.mB = cc.bodyB!.InvMass
+      c.restitution = cc.restitution!
+      c.friction = cc.friction!
+      c.indexA = cc.bodyA!.IslandIndex!
+      c.indexB = cc.bodyB!.IslandIndex!
+      c.normal = cc.manifold.normal
+      c.tangentVectors = cc.manifold.tangentVectors
+      c.bitangentVectors = cc.manifold.bitangentVectors
+      c.contactCount = cc.manifold.contactCount
+
+      // TODO: Find better indexing variable name
+      for (let jindex = 0; jindex < c.contactCount; jindex += 1) {
+        c.contacts[jindex] = ContactState.Allocate()
+        const s = c.contacts[jindex]
+        const cp = cc.manifold.contacts[jindex]
+        s.ra = Vec3.Sub(cp.position!, c.centerA)
+        s.rb = Vec3.Sub(cp.position!, c.centerB)
+        s.penetration = cp.penetration
+        s.normalImpulse = cp.normalImpulse
+        s.tangentImpulse = cp.tangentImpulse
+        s.bitangentImpulse = cp.bitangentImpulse
+      }
+    }
+  }
+
   public Clear(): void {
     this.bodies = []
     this.velocities = []
@@ -164,12 +213,15 @@ export default class Island {
 
     for (const state of this.contactStates) {
       for (let index = 0; index < state.contactCount; index += 1) {
-        // TODO
-        // this.contactStates.Free(state.contacts[index])
+        ContactState.Free(state.contacts[index])
       }
       // NOTE: Singleton class:
-      // ContactConstraintState.Free(state)
+      ContactConstraintState.Free(state)
       // Array.Clear(state.contacts, 0, state.contactCount);
+      // TODO: Does this work as intended?
+      state.contacts = Array.from<ContactState>({
+        length: state.contactCount,
+      })
     }
     this.contactStates = []
   }

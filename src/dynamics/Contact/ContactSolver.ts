@@ -20,7 +20,7 @@
  */
 
 /* eslint-disable max-classes-per-file */
-import type { VelocityState } from "@dynamics"
+import { VelocityState } from "@dynamics"
 import type Island from "@dynamics/Island"
 import { Mat3, Vec3 } from "@math"
 
@@ -94,6 +94,13 @@ export default class ContactSolver {
     this.enableFriction = island.enableFriction
   }
 
+  public Initialize(island: Island): void {
+    this.island = island
+    this.contacts = island.contactStates
+    this.velocities = island.velocities
+    this.enableFriction = island.enableFriction
+  }
+
   public Shutdown(): void {
     for (let index = 0; index < this.contacts.length; index += 1) {
       const c = this.contacts[index]
@@ -124,9 +131,9 @@ export default class ContactSolver {
     // for (let i = 0; i < this.contacts.length; i+=1) {
     for (const cs of this.contacts) {
       const vA = this.velocities[cs.indexA].angularVelocity
-      // const wA = this.velocities[cs.indexA].w
+      const wA = this.velocities[cs.indexA].linearVelocity
       const vB = this.velocities[cs.indexB].angularVelocity
-      // const wB = this.velocities[cs.indexB].w
+      const wB = this.velocities[cs.indexB].linearVelocity
 
       for (let index = 0; index < cs.contactCount; index += 1) {
         const c = cs.contacts[index]
@@ -176,30 +183,124 @@ export default class ContactSolver {
 
         // vA -= P * cs.mA;
         vA.Sub(Vec3.Scale(P, cs.mA))
+
         // wA -= cs.iA * Vec3.Cross(c.ra, P);
-        // vec3 -= mat3 * number
-        // TODO:
-        // wA.Sub(Mat3.Scale(cs.iA, Vec3.Cross(c.ra, P)))
+        wA.Sub(Mat3.MultiplyByVec3(cs.iA, Vec3.Cross(c.ra, P)))
 
         // vB += P * cs.mB;
         vB.Add(Vec3.Scale(P, cs.mB))
         // wB += cs.iB * Vec3.Cross(c.rb, P);
-        // TODO:
-        // wB.AddMat3(Mat3.Scale(cs.iB, Vec3.Cross(c.rb, P)))
+        wB.Add(Mat3.MultiplyByVec3(cs.iB, Vec3.Cross(c.rb, P)))
 
         // Add in restitution bias
+        // double dv = Vec3.Dot(vB + Vec3.Cross(wB, c.rb) - vA - Vec3.Cross(wA, c.ra), cs.normal);
         const dv = Vec3.Dot(
-          // TODO Vec3.AddNumber
-          // vB + Vec3.Cross(wB, c.rb) - vA - Vec3.Cross(wA, c.ra),
-          vB, // tmp
+          vB.Add(Vec3.Cross(wB, c.rb)).Sub(vA).Sub(Vec3.Cross(wA, c.ra)),
           cs.normal,
         )
 
         if (dv < -1) c.bias += -cs.restitution * dv
       }
 
-      // this.velocities[cs.indexA] = new VelocityState { v = vA, w = wA };
-      // this.velocities[cs.indexB] = new VelocityState { v = vB, w = wB };
+      this.velocities[cs.indexA] = new VelocityState(vA, wA)
+      this.velocities[cs.indexB] = new VelocityState(vB, wB)
+    }
+  }
+
+  public Solve(): void {
+    for (const cs of this.contacts) {
+      const vA = this.velocities[cs.indexA].angularVelocity
+      const wA = this.velocities[cs.indexA].linearVelocity
+      const vB = this.velocities[cs.indexB].angularVelocity
+      const wB = this.velocities[cs.indexB].linearVelocity
+
+      for (let index = 0; index < cs.contactCount; index += 1) {
+        const c = cs.contacts[index]
+
+        // relative velocity at contact
+        let dv = Vec3.Add(vB, Vec3.Cross(wB, c.rb))
+          .Sub(vA)
+          .Sub(Vec3.Cross(wA, c.ra))
+
+        // Friction
+        if (this.enableFriction) {
+          {
+            let lambda = -Vec3.Dot(dv, cs.tangentVectors) * c.tangentMass
+
+            // Calculate frictional impulse
+            const maxLambda = cs.friction * c.normalImpulse
+
+            // Clamp frictional impulse
+            const oldPT = c.tangentImpulse
+            c.tangentImpulse = ContactSolver.Clamp(
+              -maxLambda,
+              maxLambda,
+              oldPT + lambda,
+            )
+            lambda = c.tangentImpulse - oldPT
+
+            // Apply friction impulse
+            const impulse = Vec3.Scale(cs.tangentVectors, lambda)
+            vA.Sub(Vec3.Scale(impulse, cs.mA))
+            wA.Sub(Mat3.MultiplyByVec3(cs.iA, Vec3.Cross(c.ra, impulse)))
+
+            vB.Add(Vec3.Scale(impulse, cs.mB))
+            wB.Add(Mat3.MultiplyByVec3(cs.iB, Vec3.Cross(c.rb, impulse)))
+          }
+          {
+            let lambda = -Vec3.Dot(dv, cs.bitangentVectors) * c.bitangentMass
+
+            // Calculate frictional impulse
+            const maxLambda = cs.friction * c.normalImpulse
+
+            // Clamp frictional impulse
+            const oldPT = c.bitangentImpulse
+            c.bitangentImpulse = ContactSolver.Clamp(
+              -maxLambda,
+              maxLambda,
+              oldPT + lambda,
+            )
+            lambda = c.bitangentImpulse - oldPT
+
+            // Apply friction impulse
+            const impulse = Vec3.Scale(cs.bitangentVectors, lambda)
+            vA.Sub(Vec3.Scale(impulse, cs.mA))
+            wA.Sub(Mat3.MultiplyByVec3(cs.iA, Vec3.Cross(c.ra, impulse)))
+
+            vB.Add(Vec3.Scale(impulse, cs.mB))
+            wB.Add(Mat3.MultiplyByVec3(cs.iB, Vec3.Cross(c.rb, impulse)))
+          }
+        }
+
+        // Normal
+        {
+          dv = Vec3.Add(vB, Vec3.Cross(wB, c.rb))
+            .Sub(vA)
+            .Sub(Vec3.Cross(wA, c.ra))
+
+          // Normal impulse
+          const vn = Vec3.Dot(dv, cs.normal)
+
+          // Factor in positional bias to calculate impulse scalar j
+          let lambda = c.normalMass * (-vn + c.bias)
+
+          // Clamp impulse
+          const temporaryPN = c.normalImpulse
+          c.normalImpulse = Math.max(temporaryPN + lambda, 0)
+          lambda = c.normalImpulse - temporaryPN
+
+          // Apply impulse
+          const impulse = Vec3.Scale(cs.normal, lambda)
+          vA.Sub(Vec3.Scale(impulse, cs.mA))
+          wA.Sub(Mat3.MultiplyByVec3(cs.iA, Vec3.Cross(c.ra, impulse)))
+
+          vB.Add(Vec3.Scale(impulse, cs.mB))
+          wB.Add(Mat3.MultiplyByVec3(cs.iB, Vec3.Cross(c.rb, impulse)))
+        }
+      }
+
+      this.velocities[cs.indexA] = new VelocityState(vA, wA)
+      this.velocities[cs.indexB] = new VelocityState(vB, wB)
     }
   }
 }

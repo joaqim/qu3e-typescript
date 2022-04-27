@@ -55,7 +55,7 @@ export class Transform {
    * MulMat3
    */
   public static MulMat3(r: Mat3, q: Mat3): Mat3 {
-    return r.Multiply(q)
+    return Mat3.Multiply(r, q)
   }
 
   /**
@@ -63,8 +63,8 @@ export class Transform {
    */
   public static Mul(t: Transform, u: Transform): Transform {
     return new Transform(
-      Transform.MulMat3(u.rotation, u.rotation),
-      Transform.MulMat3WithVec3(u.rotation, u.position),
+      Transform.MulMat3(t.rotation, u.rotation),
+      Transform.MulMat3WithVec3(t.rotation, u.position),
     )
   }
 
@@ -114,7 +114,7 @@ export class Transform {
   public static MulT(t: Transform, u: Transform): Transform {
     return new Transform(
       this.MulMat3(t.rotation, u.rotation),
-      this.MulMat3WithVec3(t.rotation, u.position.Sub(t.position)),
+      this.MulMat3WithVec3(t.rotation, Vec3.Sub(u.position, t.position)),
     )
   }
 
