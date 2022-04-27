@@ -416,7 +416,7 @@ export default class Body {
     this.WorldCenter = Transform.MulWithVec3(this.Tx, lc)
   }
 
-  private SynchronizeProxies(): void {
+  public SynchronizeProxies(): void {
     const broadphase = this.Scene.ContactManager.Broadphase
 
     this.Tx.position = Vec3.Sub(

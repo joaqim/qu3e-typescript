@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
 //--------------------------------------------------------------------------------------------------
 /**
@@ -25,12 +26,15 @@
 import List from "@collections/List"
 import type Box from "@collision/Box"
 import Body from "@dynamics/Body"
-import { BodyDefinition } from "@dynamics/Body"
+import type { BodyDefinition } from "@dynamics/Body"
 import { BodyFlags } from "@dynamics/Body/Body"
 import type ContactConstraint from "@dynamics/Contact"
+import { ContactFlags } from "@dynamics/Contact/Contact"
+import type ContactEdge from "@dynamics/Contact/ContactEdge"
 import { ContactManager } from "@dynamics/ContactManager"
 import Island from "@dynamics/Island"
-import type { ReadonlyVec3, Vec3 } from "@math"
+import { Vec3 } from "@math"
+import type { ReadonlyVec3 } from "@math"
 
 // This listener is used to gather information about two shapes colliding. This
 // can be used for game logic and sounds. Physics objects created in these
@@ -80,145 +84,141 @@ export class Scene {
   // Body[] stack = new Body[256];
   public stack: Body[] = Array.from({ length: 256 })
 
+  // TODO: This function is probably broken
   // Run the simulation forward in time by dt (fixed timestep). Variable
   // timestep is not supported.
-    public Step(Dt: number): void {
-        if (this.NewBox) {
-            this.ContactManager.Broadphase.UpdatePairs();
-            this.NewBox = false;
-        }
+  public Step(): void {
+    if (this.NewBox) {
+      this.ContactManager.Broadphase.UpdatePairs()
+      this.NewBox = false
+    }
 
-        this.ContactManager.TestCollisions();
+    this.ContactManager.TestCollisions()
 
-        this.Bodies.ForEach((body: Body) => {
-            body.Flags &= ~BodyFlags.Island;
+    this.Bodies.ForEach((body: Body) => {
+      body.Flags &= ~BodyFlags.Island
     })
 
-        this.Island.allowSleep = this.AllowSleep;
-        this.Island.enableFriction = this.EnableFriction;
-        this.Island.dt = this.Dt;
-        this.Island.gravity = this.Gravity;
-        this.Island.iterations = this.Iterations;
+    this.Island.allowSleep = this.AllowSleep
+    this.Island.enableFriction = this.EnableFriction
+    this.Island.dt = this.Dt
+    this.Island.gravity = this.Gravity
+    this.Island.iterations = this.Iterations
 
-        // Build each active Island and then solve each built Island
-        //            int stackSize = Bodies.Count;
-        this.Bodies.ForEach((seed: Body) =>
-        {
-            // Seed cannot be apart of an Island already
-            if ((seed.Flags & BodyFlags.Island) > 0)
-                continue;
+    // Build each active Island and then solve each built Island
+    //            int stackSize = Bodies.Count;
+    this.Bodies.ForEach((seed: Body) => {
+      // Seed cannot be apart of an Island already
+      if ((seed.Flags & BodyFlags.Island) > 0) return
 
-            // Seed must be awake
-            if ((seed.Flags & BodyFlags.Awake) == 0)
-                continue;
+      // Seed must be awake
+      if ((seed.Flags & BodyFlags.Awake) === 0) return
 
-            // Seed cannot be a static body in order to keep islands
-            // as small as possible
-            if ((seed.Flags & BodyFlags.Static) > 0)
-                continue;
+      // Seed cannot be a static body in order to keep islands
+      // as small as possible
+      if ((seed.Flags & BodyFlags.Static) > 0) return
 
-            var stackCount = 0;
-            this.stack[stackCount++] = seed;
-            this.Island.Clear();
+      let stackCount = 0
+      this.stack[stackCount] = seed
+      // TODO: Is this increment in the correct place?
+      stackCount += 1
+      this.Island.Clear()
 
+      // Mark seed as apart of Island
+      seed.Flags |= BodyFlags.Island
 
-            // Mark seed as apart of Island
-            seed.Flags |= BodyFlags.Island;
+      // Perform DFS on constraint graph
+      while (stackCount > 0) {
+        // Decrement stack to implement iterative backtracking
+        stackCount -= 1
+        const body = this.stack[stackCount]
+        this.Island.Add(body)
 
-            // Perform DFS on constraint graph
-            while (stackCount > 0) {
-                // Decrement stack to implement iterative backtracking
-                body = this.stack[--stackCount];
-                this.Island.Add(body);
+        // Awaken all bodies connected to the Island
+        body.SetToAwake()
 
-                // Awaken all bodies connected to the Island
-                body.SetToAwake();
+        // Do not search across static bodies to keep Island
+        // formations as small as possible, however the static
+        // body itself should be apart of the Island in order
+        // to properly represent a full contact
+        if ((body.Flags & BodyFlags.Static) > 0) return
 
-                // Do not search across static bodies to keep Island
-                // formations as small as possible, however the static
-                // body itself should be apart of the Island in order
-                // to properly represent a full contact
-                if ((body.Flags & BodyFlags.Static) > 0)
-                    continue;
+        // Search all contacts connected to this body
+        // foreach(var edge in body.ContactList)
+        // eslint-disable-next-line no-loop-func
+        body.ContactList.ForEach((edge: ContactEdge) => {
+          // TODO: no non-null assertion
+          const contact = edge.constraint!
 
-                // Search all contacts connected to this body
-                foreach(var edge in body.ContactList)
-                {
-                    contact = edge.constraint;
+          // Skip contacts that have been added to an Island already
+          if ((contact.flag! & ContactFlags.Island) > 0) return
 
-                    // Skip contacts that have been added to an Island already
-                    if ((contact.Flags & ContactFlags.eIsland) > 0)
-                        continue;
+          // Can safely skip this contact if it didn't actually collide with anything
+          if ((contact.flag! & ContactFlags.Colliding) === 0) return
 
-                    // Can safely skip this contact if it didn't actually collide with anything
-                    if ((contact.Flags & ContactFlags.eColliding) == 0)
-                        continue;
+          // Skip sensors
+          if (contact.A?.sensor || contact?.B?.sensor) return
 
-                    // Skip sensors
-                    if (contact.A.sensor || contact.B.sensor)
-                        continue;
+          // Mark Island flag and add to Island
+          contact!.flag! |= ContactFlags.Island
+          this.Island.AddContact(contact)
 
-                    // Mark Island flag and add to Island
-                    contact.Flags |= ContactFlags.eIsland;
-                    this.Island.Add(contact);
+          // Attempt to add the other body in the contact to the Island
+          // to simulate contact awakening propogation
+          const other = edge.other!
 
-                    // Attempt to add the other body in the contact to the Island
-                    // to simulate contact awakening propogation
-                    var other = edge.other;
-                    if ((other.Flags & BodyFlags.eIsland) > 0)
-                        continue;
+          if ((other.Flags & BodyFlags.Island) > 0) return
 
-                    Assert(stackCount < 256);
+          // Assert(stackCount < 256)
 
-                    this.stack[stackCount++] = other;
-                    other.Flags |= BodyFlags.Island;
-                }
-            }
+          this.stack[stackCount] = other
+          stackCount += 1
+          other.Flags |= BodyFlags.Island
+        })
+      }
 
-            Assert(this.Island.Bodies.Count != 0);
+      // Assert(this.Island.Bodies.Count != 0);
 
-            this.Island.Initialize();
-            this.Island.Solve();
+      this.Island.Initialize()
+      this.Island.Solve()
 
-            // Reset all static Island flags
-            // This allows static bodies to participate in other Island formations
-            foreach(var body in Island.Bodies)
-            {
-                if ((body.Flags & BodyFlags.eStatic) > 0)
-                    body.Flags &= ~BodyFlags.eIsland;
-            }
-        }}
+      // Reset all static Island flags
+      // This allows static bodies to participate in other Island formations
+      // foreach(var body in Island.Bodies)
+      for (const body of this.Island.bodies) {
+        if ((body.Flags & BodyFlags.Static) > 0) body.Flags &= ~BodyFlags.Island
+      }
+    })
 
-        // Update the broadphase AABBs
-        foreach(var body in Bodies)
-        {
-            if ((body.Flags & BodyFlags.eStatic) > 0)
-                continue;
+    // Update the broadphase AABBs
+    // foreach(var body in Bodies)
+    this.Bodies.ForEach((body: Body) => {
+      if ((body.Flags & BodyFlags.Static) > 0) return
 
-            body.SynchronizeProxies();
-        }
+      body.SynchronizeProxies()
+    })
 
-        // Look for new contacts
-        this.ContactManager.FindNewContacts();
+    // Look for new contacts
+    this.ContactManager.FindNewContacts()
 
-        // Clear all forces
-        foreach(var body in Bodies)
-        {
-            Vec3.Identity(ref body.Force);
-            Vec3.Identity(ref body.Torque);
-        }
-    }
+    // Clear all forces
+    // foreach(var body in Bodies)
+    this.Bodies.ForEach((body: Body) => {
+      body.Force = Vec3.Identity()
+      body.Torque = Vec3.Identity()
+    })
+  }
 
-    // Construct a new rigid body. The BodyDef can be reused at the user's
-    // discretion, as no reference to the BodyDef is kept.
-    public CreateBody(def: Readonly<BodyDefinition>): Body {
-        const body = new Body(def, this);
+  // Construct a new rigid body. The BodyDef can be reused at the user's
+  // discretion, as no reference to the BodyDef is kept.
+  public CreateBody(definition: Readonly<BodyDefinition>): Body {
+    const body = new Body(definition, this)
 
-        // Add body to scene Bodies
-        this.Bodies.Add(body);
+    // Add body to scene Bodies
+    this.Bodies.Add(body)
 
-        return body;
-    }
+    return body
+  }
   /*
 
     // Frees a body, removes all shapes associated with the body and frees
