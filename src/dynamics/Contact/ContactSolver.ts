@@ -101,7 +101,7 @@ export default class ContactSolver {
     this.enableFriction = island.enableFriction
   }
 
-  public ShutDown(): void {
+  public Shutdown(): void {
     for (let index = 0; index < this.contacts.length; index += 1) {
       const c = this.contacts[index]
       const cc = this.island.contacts[index]
@@ -184,6 +184,7 @@ export default class ContactSolver {
         // vA -= P * cs.mA;
         vA.Sub(Vec3.Scale(P, cs.mA))
 
+        // wA -= cs.iA * Vec3.Cross(c.ra, P);
         wA.Sub(Mat3.MultiplyByVec3(cs.iA, Vec3.Cross(c.ra, P)))
 
         // vB += P * cs.mB;
@@ -192,8 +193,8 @@ export default class ContactSolver {
         wB.Add(Mat3.MultiplyByVec3(cs.iB, Vec3.Cross(c.rb, P)))
 
         // Add in restitution bias
+        // double dv = Vec3.Dot(vB + Vec3.Cross(wB, c.rb) - vA - Vec3.Cross(wA, c.ra), cs.normal);
         const dv = Vec3.Dot(
-          // TODO: Make sure this is correct
           vB.Add(Vec3.Cross(wB, c.rb)).Sub(vA).Sub(Vec3.Cross(wA, c.ra)),
           cs.normal,
         )
@@ -207,13 +208,9 @@ export default class ContactSolver {
   }
 
   public Solve(): void {
-    // for (let index = 0; index < this.contacts.length; index += 1) {
     for (const cs of this.contacts) {
-      // const cs = this.contacts[index]
-
       const vA = this.velocities[cs.indexA].angularVelocity
       const wA = this.velocities[cs.indexA].linearVelocity
-
       const vB = this.velocities[cs.indexB].angularVelocity
       const wB = this.velocities[cs.indexB].linearVelocity
 
@@ -221,11 +218,9 @@ export default class ContactSolver {
         const c = cs.contacts[index]
 
         // relative velocity at contact
-        // let dv = vB + Vec3.Cross(wB, c.rb) - vA - Vec3.Cross(wA, c.ra);
-        let dv = Vec3.Add(
-          vB,
-          Vec3.Cross(wB, c.rb).Sub(vA).Sub(Vec3.Cross(wA, c.ra)),
-        )
+        let dv = Vec3.Add(vB, Vec3.Cross(wB, c.rb))
+          .Sub(vA)
+          .Sub(Vec3.Cross(wA, c.ra))
 
         // Friction
         if (this.enableFriction) {
@@ -249,10 +244,7 @@ export default class ContactSolver {
             vA.Sub(Vec3.Scale(impulse, cs.mA))
             wA.Sub(Mat3.MultiplyByVec3(cs.iA, Vec3.Cross(c.ra, impulse)))
 
-            // vB += impulse * cs.mB;
-            wB.Add(Vec3.Scale(impulse, cs.mB))
-
-            // wB += cs.iB * Vec3.Cross(c.rb, impulse);
+            vB.Add(Vec3.Scale(impulse, cs.mB))
             wB.Add(Mat3.MultiplyByVec3(cs.iB, Vec3.Cross(c.rb, impulse)))
           }
           {
@@ -272,24 +264,17 @@ export default class ContactSolver {
 
             // Apply friction impulse
             const impulse = Vec3.Scale(cs.bitangentVectors, lambda)
-            // vA -= impulse * cs.mA;
             vA.Sub(Vec3.Scale(impulse, cs.mA))
-            // wA -= cs.iA * Vec3.Cross(c.ra, impulse);
             wA.Sub(Mat3.MultiplyByVec3(cs.iA, Vec3.Cross(c.ra, impulse)))
 
-            // vB += impulse * cs.mB;
-            wB.Add(Vec3.Scale(impulse, cs.mB))
-            // wB += cs.iB * Vec3.Cross(c.rb, impulse);
+            vB.Add(Vec3.Scale(impulse, cs.mB))
             wB.Add(Mat3.MultiplyByVec3(cs.iB, Vec3.Cross(c.rb, impulse)))
           }
         }
 
         // Normal
         {
-          // dv = vB + Vec3.Cross(wB, c.rb) - vA - Vec3.Cross(wA, c.ra);
-          dv = vB
-            .Copy()
-            .Add(Vec3.Cross(wB, c.rb))
+          dv = Vec3.Add(vB, Vec3.Cross(wB, c.rb))
             .Sub(vA)
             .Sub(Vec3.Cross(wA, c.ra))
 
@@ -306,15 +291,10 @@ export default class ContactSolver {
 
           // Apply impulse
           const impulse = Vec3.Scale(cs.normal, lambda)
-
-          // vA -= impulse * cs.mA;
           vA.Sub(Vec3.Scale(impulse, cs.mA))
-          // wA -= cs.iA * Vec3.Cross(c.ra, impulse);
           wA.Sub(Mat3.MultiplyByVec3(cs.iA, Vec3.Cross(c.ra, impulse)))
 
-          // vB += impulse * cs.mB;
-          wB.Add(Vec3.Scale(impulse, cs.mB))
-          // wB += cs.iB * Vec3.Cross(c.rb, impulse);
+          vB.Add(Vec3.Scale(impulse, cs.mB))
           wB.Add(Mat3.MultiplyByVec3(cs.iB, Vec3.Cross(c.rb, impulse)))
         }
       }
