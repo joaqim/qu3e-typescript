@@ -1,6 +1,6 @@
-import type Box from "@collision/Box"
-import type { FixedArray } from "@containers"
-import type { Vec3 } from "@math"
+import type Box from "../collision/Box"
+import type { FixedArray } from "../containers"
+import type { Vec3 } from "../math"
 import Contact from "./Contact"
 
 export default class Manifold {

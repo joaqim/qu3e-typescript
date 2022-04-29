@@ -19,10 +19,9 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import { HalfSpace } from "@common/geometry"
-import { Mat3 } from "@math"
-import type { ReadonlyVec3 } from "./Vec3"
-import { Vec3 } from "./Vec3"
+import type { ReadonlyVec3 } from "."
+import { Mat3, Vec3 } from "."
+import { HalfSpace } from "../common/geometry"
 
 export class Transform {
   public position!: Vec3

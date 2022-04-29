@@ -22,15 +22,15 @@
 import type Box from "@collision/Box"
 
 declare global {
-  var Q3_SLEEP_LINEAR: number
-  var Q3_SLEEP_ANGULAR: number
-  var Q3_SLEEP_TIME: number
-  var Q3_BAUMGARTE: number
-  var Q3_PENETRATION_SLOP: number
+  let Q3_SLEEP_LINEAR: number
+  let Q3_SLEEP_ANGULAR: number
+  let Q3_SLEEP_TIME: number
+  let Q3_BAUMGARTE: number
+  let Q3_PENETRATION_SLOP: number
 
-  var Assert: (condition: boolean, message?: string) => void
-  var MixRestitution: (A: Box, B: Box) => number
-  var MixFriction: (A: Box, B: Box) => number
+  let Assert: (condition: boolean, message?: string) => void
+  let MixRestitution: (A: Box, B: Box) => number
+  let MixFriction: (A: Box, B: Box) => number
 }
 
 Q3_SLEEP_LINEAR = 0.01
@@ -39,11 +39,12 @@ Q3_SLEEP_TIME = 0.5
 Q3_BAUMGARTE = 0.2
 Q3_PENETRATION_SLOP = 0.05
 
-Assert = (condition: boolean, message?: string) => {
+Assert = (condition: boolean, message?: string): void => {
   if (!condition) throw new Error(message)
 }
-MixRestitution = (A: Box, B: Box) => Math.max(A.restitution, B.restitution)
-MixFriction = (A: Box, B: Box) => Math.sqrt(A.friction * B.friction)
+MixRestitution = (A: Box, B: Box): number =>
+  Math.max(A.restitution, B.restitution)
+MixFriction = (A: Box, B: Box): number => Math.sqrt(A.friction * B.friction)
 
 /*
 export default class Settings {

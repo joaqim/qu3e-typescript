@@ -19,12 +19,12 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import BroadPhase from "@broadphase"
-import List from "@collections/List"
-import type Box from "@collision/Box"
-import { AABB } from "@common"
-import { Vec3 } from "@math"
-import type { ContactListener } from "@scene/Scene"
+import BroadPhase from "../broadphase"
+import List from "../collections/List"
+import type Box from "../collision/Box"
+import { AABB } from "../common"
+import { Vec3 } from "../math"
+import type { ContactListener } from "../scene/Scene"
 import type Body from "./Body"
 import { ContactFlags } from "./Contact/Contact"
 import ContactConstraint from "./Contact/ContactConstraint"

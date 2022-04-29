@@ -20,8 +20,8 @@
  */
 
 /* eslint-disable max-classes-per-file */
-import type { ReadonlyVec3 } from "@math"
-import { Mat3, Quaternion, Vec3 } from "@math"
+import type { ReadonlyVec3 } from "../math"
+import { Vec3, Mat3, Quaternion } from "../math"
 import type Body from "./Body"
 import { BodyFlags } from "./Body/Body"
 import type ContactConstraint from "./Contact/ContactConstraint"

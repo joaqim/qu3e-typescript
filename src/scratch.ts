@@ -1,14 +1,14 @@
-import { BoxDefinition } from "@collision"
-import type Box from "@collision/Box"
-import { BodyDefinition } from "@dynamics"
-import { BodyType } from "@dynamics/Body/Body"
-import { Transform, Vec3 } from "@math"
-import { Scene } from "@scene/Scene"
+import { BoxDefinition } from "./collision"
+import type Box from "./collision/Box"
+import { BodyDefinition } from "./dynamics"
+import type Body from "./dynamics/Body"
+import { BodyType } from "./dynamics/Body/Body"
+import { Vec3, Transform } from "./math"
+import { Scene } from "./scene/Scene"
 
 export function InitPhysics(boxes: Box[]): Scene {
   const gravity = new Vec3(0, -9.8, 10)
   const scene = new Scene(1 / 100, gravity, 10)
-
   // Create the floor
   const bodyDef = new BodyDefinition()
   let body = scene.CreateBody(bodyDef)

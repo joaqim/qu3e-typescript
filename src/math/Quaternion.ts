@@ -19,7 +19,7 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import "@common/global"
+import "../common/global"
 import { Mat3 } from "./Mat3"
 import { Vec3 } from "./Vec3"
 

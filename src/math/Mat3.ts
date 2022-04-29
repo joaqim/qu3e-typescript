@@ -20,9 +20,9 @@
  * 	  3. This notice may not be removed or altered from any source distribution.
  */
 
-import type { FixedArray } from "@containers"
-import type { ReadonlyVec3, Vec3Axis } from "./Vec3"
-import { Vec3 } from "./Vec3"
+import type { FixedArray } from "../containers"
+import type { ReadonlyVec3, Vec3Axis } from "."
+import { Vec3 } from "."
 
 export type Mat3Index = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 export type Mat3Axis = 0 | 1 | 2

@@ -22,15 +22,16 @@
 */
 //--------------------------------------------------------------------------------------------------
 
-import List from "@collections/List"
-import type Box from "@collision/Box"
-import Body from "@dynamics/Body"
-import { BodyDefinition } from "@dynamics/Body"
-import { BodyFlags } from "@dynamics/Body/Body"
-import type ContactConstraint from "@dynamics/Contact"
-import { ContactManager } from "@dynamics/ContactManager"
-import Island from "@dynamics/Island"
-import type { ReadonlyVec3, Vec3 } from "@math"
+import List from "../collections/List"
+import Box from "../collision/Box"
+import { BodyDefinition } from "../dynamics"
+import Body from "../dynamics/Body"
+import { BodyFlags } from "../dynamics/Body/Body"
+import { ContactFlags } from "../dynamics/Contact/Contact"
+import ContactConstraint from "../dynamics/Contact/ContactConstraint"
+import { ContactManager } from "../dynamics/ContactManager"
+import Island from "../dynamics/Island"
+import { Vec3, ReadonlyVec3 } from "../math"
 
 // This listener is used to gather information about two shapes colliding. This
 // can be used for game logic and sounds. Physics objects created in these
@@ -51,6 +52,9 @@ export abstract class QueryCallback {
 }
 
 export class Scene {
+  CreateBody(bodyDef: BodyDefinition): Body {
+    throw new Error("Method not implemented.")
+  }
   public ContactManager: ContactManager
 
   public Bodies: List<Body>
